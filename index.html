@@ -3,1513 +3,1495 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#080d1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff">
   <title>KasKu</title>
   <style>
-    *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     :root {
-      --bg:       #080d1a;
-      --bg2:      #0f1629;
-      --bg3:      #151e35;
-      --bg4:      #1c2844;
-      --border:   #1f2e50;
-      --border2:  #253353;
-      --text:     #e8eeff;
-      --text2:    #7a8db8;
-      --text3:    #4a5a80;
-      --accent:   #4f8ef7;
-      --accent2:  #3a6fd8;
-      --green:    #34d399;
-      --green2:   #10b97a;
-      --red:      #f87171;
-      --red2:     #dc4545;
-      --yellow:   #fbbf24;
-      --purple:   #a78bfa;
-      --nav-h:    68px;
+      --bg:      #f4f5ff;
+      --card:    #ffffff;
+      --primary: #5856d6;
+      --pri2:    #7b79e8;
+      --pri-lt:  #ededff;
+      --text:    #1a1a2e;
+      --text2:   #6b7280;
+      --text3:   #9ca3af;
+      --green:   #16a34a;
+      --green-lt:#dcfce7;
+      --red:     #dc2626;
+      --red-lt:  #fee2e2;
+      --yellow:  #d97706;
+      --border:  #e8e9f0;
+      --nav-h:   62px;
+      --sh:      0 2px 12px rgba(88,86,214,.08);
+      --sh2:     0 4px 20px rgba(0,0,0,.07);
     }
-
-    html, body {
-      height: 100%; overflow: hidden;
-    }
-
+    html, body { height:100%; overflow:hidden; background:var(--card); }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      max-width: 480px;
-      margin: 0 auto;
-      position: relative;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+      background:var(--bg); color:var(--text);
+      max-width:480px; margin:0 auto;
+      height:100%; display:flex; flex-direction:column;
+    }
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    /* ── App shell ── */
+    #app { flex:1; overflow:hidden; position:relative; }
+    .screen {
+      position:absolute; inset:0;
+      overflow-y:auto; overflow-x:hidden;
+      display:none; background:var(--bg);
+    }
+    .screen.active { display:block; }
+    .screen.padnav { padding-bottom:calc(var(--nav-h) + 8px); }
+
+    /* ── Sub-page header ── */
+    .pg-head {
+      display:flex; align-items:center; gap:12px;
+      padding:14px 18px;
+      background:var(--card);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:20;
+    }
+    .back-btn {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--bg); border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; color:var(--text); flex-shrink:0;
+    }
+    .pg-head h2 { font-size:17px; font-weight:800; }
+    .pg-head-right { margin-left:auto; }
+
+    /* ══════════════════════════
+       HOME SCREEN
+    ══════════════════════════ */
+    .home-top {
+      background:var(--card);
+      padding:20px 20px 14px;
+      display:flex; align-items:flex-start; justify-content:space-between;
+      border-bottom:1px solid var(--border);
+    }
+    .home-top h2 {
+      font-size:22px; font-weight:800; cursor:pointer;
+      color:var(--text);
+    }
+    .home-top p { font-size:12px; color:var(--text2); margin-top:3px; }
+    .settings-btn {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--bg); border:none; cursor:pointer;
+      font-size:18px; display:flex; align-items:center; justify-content:center;
     }
 
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    /* Balance card */
+    .bal-card {
+      margin:14px 16px;
+      border-radius:22px;
+      padding:20px 22px 22px;
+      background:linear-gradient(140deg,#4846c5 0%,#6361df 50%,#8480f0 100%);
+      color:white; position:relative; overflow:hidden;
+    }
+    .bal-card::before {
+      content:''; position:absolute;
+      top:-50px; right:-40px;
+      width:180px; height:180px; border-radius:50%;
+      background:rgba(255,255,255,.07);
+    }
+    .bal-card::after {
+      content:''; position:absolute;
+      bottom:-70px; left:-20px;
+      width:200px; height:200px; border-radius:50%;
+      background:rgba(255,255,255,.05);
+    }
+    .bc-row1 {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:2px; position:relative; z-index:1;
+    }
+    .bc-lbl {
+      font-size:11px; font-weight:700; letter-spacing:1.2px;
+      text-transform:uppercase; color:rgba(255,255,255,.7);
+    }
+    .eye-btn {
+      background:none; border:none; cursor:pointer;
+      color:rgba(255,255,255,.8); font-size:20px;
+      padding:4px; line-height:1;
+    }
+    .bc-amt {
+      font-size:34px; font-weight:900;
+      letter-spacing:-1px; line-height:1.1;
+      position:relative; z-index:1; margin-bottom:4px;
+    }
+    .bc-sub {
+      font-size:12px; color:rgba(255,255,255,.55);
+      position:relative; z-index:1; margin-bottom:16px;
+    }
+    .bc-sep { height:1px; background:rgba(255,255,255,.18); margin-bottom:14px; position:relative; z-index:1; }
+    .bc-stats { display:flex; justify-content:space-between; position:relative; z-index:1; }
+    .bc-stat-lbl {
+      display:flex; align-items:center; gap:6px;
+      font-size:12px; color:rgba(255,255,255,.7); margin-bottom:4px;
+    }
+    .bc-dot { width:8px; height:8px; border-radius:50%; }
+    .bc-stat-amt { font-size:16px; font-weight:800; }
+    .bc-stat-amt.inc { color:#86efac; }
+    .bc-stat-amt.exp { color:#fca5a5; }
 
-    /* ── Pages ── */
-    #app {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
+    /* Section header */
+    .sec-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 18px; margin-bottom:10px;
+    }
+    .sec-head h3 { font-size:16px; font-weight:800; }
+    .see-all-btn {
+      font-size:13px; color:var(--primary); font-weight:600;
+      background:none; border:none; cursor:pointer;
     }
 
-    .page {
-      position: absolute;
-      inset: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: none;
-      padding-bottom: calc(var(--nav-h) + 20px);
+    /* Wallet scroll */
+    .wallet-row {
+      display:flex; gap:12px;
+      padding:2px 18px 14px;
+      overflow-x:auto; scrollbar-width:none;
     }
-    .page.active { display: block; }
+    .wallet-row::-webkit-scrollbar { display:none; }
 
-    /* ── Header ── */
-    .header {
-      padding: 18px 20px 14px;
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 20;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* Wallet card */
+    .wcard {
+      flex-shrink:0; width:128px;
+      background:var(--card); border-radius:16px;
+      box-shadow:var(--sh2); overflow:hidden;
+      cursor:pointer; transition:transform .15s;
     }
-    .header-left h1 {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
+    .wcard:active { transform:scale(.95); }
+    .wcard-top {
+      height:58px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:28px;
     }
-    .header-left p {
-      font-size: 12px;
-      color: var(--text2);
-      margin-top: 2px;
+    .wcard-body { padding:10px 12px 12px; }
+    .wcard-name {
+      font-size:13px; font-weight:700;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
-    .header-badge {
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      color: white;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.3px;
+    .wcard-bal {
+      font-size:13px; font-weight:800; color:var(--green);
+      margin:3px 0;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .wcard-adj { font-size:11px; color:var(--text3); display:flex; align-items:center; gap:2px; }
+
+    /* Add wallet card */
+    .wcard-add {
+      flex-shrink:0; width:108px;
+      background:var(--pri-lt);
+      border-radius:16px;
+      border:2px dashed rgba(88,86,214,.25);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:8px; padding:16px 8px;
+      cursor:pointer; transition:transform .15s;
+    }
+    .wcard-add:active { transform:scale(.95); }
+    .wcard-add-ico {
+      width:40px; height:40px; border-radius:50%;
+      background:rgba(88,86,214,.14);
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; color:var(--primary);
+    }
+    .wcard-add span { font-size:12px; font-weight:700; color:var(--primary); text-align:center; }
+
+    /* TX item */
+    .tx-item {
+      display:flex; align-items:center; gap:12px;
+      padding:12px 18px;
+      border-bottom:1px solid var(--border);
+      background:var(--card);
+      cursor:default;
+    }
+    .tx-item:first-child { border-top:1px solid var(--border); }
+    .tx-ico {
+      width:44px; height:44px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+    }
+    .tx-info { flex:1; min-width:0; }
+    .tx-name { font-size:14px; font-weight:700; }
+    .tx-meta { font-size:12px; color:var(--text2); margin-top:2px; }
+    .tx-right { flex-shrink:0; display:flex; align-items:center; gap:6px; }
+    .tx-amt { font-size:14px; font-weight:800; }
+    .tx-amt.inc { color:var(--green); }
+    .tx-amt.exp { color:var(--red); }
+    .del-btn {
+      background:none; border:none;
+      color:var(--text3); font-size:20px;
+      cursor:pointer; line-height:1; padding:2px;
     }
 
-    /* ── Bottom Nav ── */
-    .bottom-nav {
-      height: var(--nav-h);
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 100;
+    /* Empty state */
+    .empty { text-align:center; padding:44px 24px; }
+    .empty .ei { font-size:52px; margin-bottom:14px; }
+    .empty .et { font-size:16px; font-weight:700; margin-bottom:6px; }
+    .empty .es { font-size:13px; color:var(--text2); line-height:1.5; }
+
+    /* ══════════════════════════
+       BOTTOM NAV
+    ══════════════════════════ */
+    .bot-nav {
+      height:var(--nav-h);
+      background:var(--card);
+      border-top:1px solid var(--border);
+      display:flex; align-items:center;
+      flex-shrink:0;
     }
     .nav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      cursor: pointer;
-      color: var(--text3);
-      background: none;
-      border: none;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      transition: color 0.2s;
-      position: relative;
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:4px; background:none; border:none; cursor:pointer;
+      color:var(--text3); font-size:10px; font-weight:600;
+      transition:color .2s; height:100%;
     }
-    .nav-btn svg { width: 22px; height: 22px; stroke-width: 1.8; }
-    .nav-btn.active { color: var(--accent); }
-    .nav-btn.active::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 25%;
-      right: 25%;
-      height: 2px;
-      background: var(--accent);
-      border-radius: 0 0 3px 3px;
+    .nav-btn svg { width:22px; height:22px; stroke-width:1.8; }
+    .nav-btn.active { color:var(--primary); }
+    .nav-fab {
+      flex-shrink:0; width:52px; height:52px; border-radius:50%;
+      background:linear-gradient(135deg,var(--primary),var(--pri2));
+      border:none; color:white; font-size:28px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; margin-top:-18px;
+      box-shadow:0 4px 16px rgba(88,86,214,.45);
+      transition:transform .15s;
     }
+    .nav-fab:active { transform:scale(.88); }
 
-    /* ── Card ── */
-    .card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+    /* ══════════════════════════
+       FORMS
+    ══════════════════════════ */
+    .form-body { padding:20px; }
+    .fg { margin-bottom:18px; }
+    .fl {
+      display:block; font-size:12px; font-weight:700;
+      color:var(--text2); letter-spacing:.3px; text-transform:uppercase;
+      margin-bottom:8px;
     }
+    .fi {
+      width:100%; background:var(--card);
+      border:1.5px solid var(--border); border-radius:12px;
+      color:var(--text); font-size:15px; padding:13px 16px;
+      outline:none; transition:border-color .2s;
+      -webkit-appearance:none; appearance:none;
+    }
+    .fi:focus { border-color:var(--primary); }
+    .fi::placeholder { color:var(--text3); }
+    textarea.fi { resize:none; line-height:1.55; }
+    select.fi { cursor:pointer; }
+    .amt-wrap { position:relative; }
+    .amt-pre {
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      font-size:15px; font-weight:700; color:var(--text2); pointer-events:none;
+    }
+    .amt-wrap .fi { padding-left:42px; font-weight:800; }
 
-    /* ── Balance Hero ── */
-    .balance-hero {
-      margin: 16px;
-      border-radius: 22px;
-      padding: 28px 22px 24px;
-      background: linear-gradient(145deg, #0d1f5c 0%, #132680 40%, #1a3496 70%, #0e2070 100%);
-      position: relative;
-      overflow: hidden;
-    }
-    .balance-hero::before {
-      content: '';
-      position: absolute;
-      top: -50px; right: -50px;
-      width: 200px; height: 200px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 50%;
-    }
-    .balance-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -70px; left: -30px;
-      width: 220px; height: 220px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 50%;
-    }
-    .bh-decoration {
-      position: absolute;
-      top: 18px; right: 18px;
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-    }
-    .bh-label {
-      font-size: 12px;
-      color: rgba(255,255,255,0.55);
-      font-weight: 500;
-      letter-spacing: 0.3px;
-      margin-bottom: 6px;
-    }
-    .bh-amount {
-      font-size: 34px;
-      font-weight: 800;
-      color: white;
-      letter-spacing: -1px;
-      line-height: 1.1;
-    }
-    .bh-amount.negative { color: var(--red); }
-    .bh-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .bh-sub-item { display: flex; align-items: center; gap: 5px; }
-    .bh-sub-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-    /* ── Summary Grid ── */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 0 16px 16px;
-    }
-    .s-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 14px 12px;
-    }
-    .s-card-icon {
-      width: 34px; height: 34px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-    .s-card-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
-    .s-card-value { font-size: 14px; font-weight: 800; letter-spacing: -0.3px; }
-
-    /* ── Section ── */
-    .section { margin: 0 16px 16px; }
-    .section-head {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .section-title { font-size: 15px; font-weight: 700; }
-    .section-link {
-      font-size: 12px; color: var(--accent);
-      background: none; border: none; cursor: pointer; font-weight: 600;
-    }
-
-    /* ── Transaction Item ── */
-    .tx-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .tx-item:last-child { border-bottom: none; }
-    .tx-ico {
-      width: 40px; height: 40px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-    .tx-info { flex: 1; min-width: 0; }
-    .tx-name {
-      font-size: 14px; font-weight: 600;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .tx-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
-    .tx-right { flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
-    .tx-amount { font-size: 14px; font-weight: 800; }
-    .tx-amount.income { color: var(--green); }
-    .tx-amount.expense { color: var(--red); }
-
-    /* ── Progress ── */
-    .progress-track {
-      background: var(--bg3);
-      border-radius: 6px; height: 8px; overflow: hidden;
-      margin: 8px 0;
-    }
-    .progress-fill {
-      height: 100%; border-radius: 6px;
-      background: linear-gradient(90deg, var(--accent), var(--purple));
-      transition: width 0.4s ease;
-      min-width: 4px;
-    }
-
-    /* ── Buttons ── */
-    .btn {
-      padding: 13px 20px;
-      border-radius: 12px;
-      font-size: 14px; font-weight: 700;
-      border: none; cursor: pointer;
-      transition: transform 0.1s, opacity 0.15s;
-      letter-spacing: 0.1px;
-    }
-    .btn:active { transform: scale(0.96); }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: white; width: 100%;
-      box-shadow: 0 4px 15px rgba(79,142,247,0.3);
-    }
-    .btn-success {
-      background: linear-gradient(135deg, var(--green), var(--green2));
-      color: white;
-      box-shadow: 0 4px 12px rgba(52,211,153,0.25);
-    }
-    .btn-danger {
-      background: linear-gradient(135deg, var(--red), var(--red2));
-      color: white;
-    }
-    .btn-ghost {
-      background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--text2);
-    }
-    .btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
-
-    /* ── FAB ── */
-    .fab {
-      position: fixed;
-      bottom: calc(var(--nav-h) + 16px);
-      right: max(16px, calc((100vw - 480px) / 2 + 16px));
-      width: 54px; height: 54px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      border: none; color: white; font-size: 26px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 6px 24px rgba(79,142,247,0.45);
-      z-index: 90;
-      transition: transform 0.2s;
-      line-height: 1;
-    }
-    .fab:active { transform: scale(0.88); }
-
-    /* ── Modal ── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: none; align-items: flex-end; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--bg2);
-      border-radius: 24px 24px 0 0;
-      width: 100%; max-width: 480px;
-      max-height: 92vh;
-      overflow-y: auto;
-      border-top: 1px solid var(--border2);
-      padding-bottom: 32px;
-    }
-    .modal-handle {
-      width: 40px; height: 4px;
-      background: var(--border2);
-      border-radius: 2px;
-      margin: 14px auto 0;
-    }
-    .modal-title {
-      font-size: 18px; font-weight: 800;
-      padding: 14px 20px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-body { padding: 20px; }
-
-    /* ── Form ── */
-    .form-group { margin-bottom: 16px; }
-    .form-label {
-      font-size: 12px; color: var(--text2); font-weight: 600;
-      letter-spacing: 0.3px; text-transform: uppercase;
-      margin-bottom: 8px; display: block;
-    }
-    .form-input {
-      width: 100%;
-      background: var(--bg3);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 16px;
-      padding: 13px 16px;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      -webkit-appearance: none;
-    }
-    .form-input:focus {
-      border-color: var(--accent);
-      background: var(--bg4);
-    }
-    .form-input::placeholder { color: var(--text3); }
-    .amount-input-wrap { position: relative; }
-    .amount-prefix {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      font-size: 15px; font-weight: 700; color: var(--text2);
-      pointer-events: none;
-    }
-    .amount-input-wrap .form-input { padding-left: 42px; font-weight: 700; }
-
-    /* ── Type Toggle ── */
-    .type-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+    /* Type toggle */
+    .type-row { display:flex; gap:8px; margin-bottom:18px; }
     .type-btn {
-      flex: 1; padding: 11px 8px;
-      border-radius: 12px;
-      border: 2px solid var(--border);
-      background: transparent;
-      color: var(--text2);
-      font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s;
+      flex:1; padding:12px; border-radius:12px;
+      border:2px solid var(--border); background:transparent;
+      color:var(--text2); font-size:14px; font-weight:700;
+      cursor:pointer; transition:all .2s;
     }
-    .type-btn.sel-income {
-      border-color: var(--green);
-      background: rgba(52,211,153,0.1);
-      color: var(--green);
-    }
-    .type-btn.sel-expense {
-      border-color: var(--red);
-      background: rgba(248,113,113,0.1);
-      color: var(--red);
-    }
+    .type-btn.t-inc { border-color:var(--green); background:var(--green-lt); color:var(--green); }
+    .type-btn.t-exp { border-color:var(--red); background:var(--red-lt); color:var(--red); }
 
-    /* ── Category Grid ── */
-    .cat-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
+    /* Category grid */
+    .cat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
     .cat-btn {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 5px;
-      padding: 10px 4px;
-      border-radius: 12px;
-      border: 2px solid var(--border);
-      background: transparent; color: var(--text2);
-      cursor: pointer; transition: all 0.18s;
-      font-size: 10px; font-weight: 600;
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+      padding:10px 4px; border-radius:12px;
+      border:2px solid var(--border); background:transparent;
+      color:var(--text2); font-size:10px; font-weight:600;
+      cursor:pointer; transition:all .18s;
     }
-    .cat-btn .ci { font-size: 22px; line-height: 1; }
-    .cat-btn.sel {
-      border-color: var(--accent);
-      background: rgba(79,142,247,0.12);
-      color: var(--accent);
-    }
+    .cat-btn .ci { font-size:20px; line-height:1; }
+    .cat-btn.sel { border-color:var(--primary); background:var(--pri-lt); color:var(--primary); }
 
-    /* ── Seg Tab ── */
-    .segtab {
-      display: flex;
-      background: var(--bg3); border-radius: 12px; padding: 4px;
-      margin-bottom: 20px; gap: 4px;
+    /* Wallet icon picker */
+    .ico-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+    .ico-btn {
+      aspect-ratio:1; border-radius:12px;
+      border:2px solid var(--border); background:transparent;
+      font-size:24px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .18s;
     }
-    .segtab-btn {
-      flex: 1; padding: 9px 4px;
-      border-radius: 9px; border: none;
-      background: transparent; color: var(--text2);
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .segtab-btn.sel-hutang  { background: rgba(248,113,113,0.15); color: var(--red); }
-    .segtab-btn.sel-piutang { background: rgba(52,211,153,0.15);  color: var(--green); }
+    .ico-btn.sel { border-color:var(--primary); background:var(--pri-lt); }
 
-    /* ── Tabs ── */
-    .tabs {
-      display: flex;
-      background: var(--bg3); border-radius: 12px; padding: 4px;
-      margin: 12px 16px; gap: 4px;
+    /* Color picker */
+    .clr-row { display:flex; flex-wrap:wrap; gap:10px; }
+    .clr-dot {
+      width:36px; height:36px; border-radius:50%;
+      cursor:pointer; border:3px solid transparent;
+      transition:all .18s;
     }
-    .tab-btn {
-      flex: 1; padding: 9px 4px;
-      border-radius: 9px; border: none;
-      background: transparent; color: var(--text2);
-      font-size: 12px; font-weight: 700; cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tab-btn.active {
-      background: var(--bg2); color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    }
+    .clr-dot.sel { border-color:var(--text); transform:scale(1.15); }
 
-    /* ── Filter chips ── */
-    .filter-row {
-      display: flex; gap: 8px; padding: 6px 16px 12px;
-      overflow-x: auto; scrollbar-width: none;
+    /* Buttons */
+    .btn {
+      padding:14px 20px; border-radius:13px;
+      font-size:15px; font-weight:700; border:none;
+      cursor:pointer; transition:transform .1s;
     }
-    .filter-row::-webkit-scrollbar { display: none; }
+    .btn:active { transform:scale(.97); }
+    .btn-pri { background:var(--primary); color:white; width:100%; }
+    .btn-out { background:transparent; border:2px solid var(--border); color:var(--text2); }
+    .btn-del { background:var(--red-lt); color:var(--red); }
+    .btn-ok  { background:var(--green-lt); color:var(--green); }
+    .btn-sm  { padding:7px 14px; font-size:12px; border-radius:9px; }
+
+    /* ══════════════════════════
+       WALLET DETAIL
+    ══════════════════════════ */
+    .wh-card {
+      margin:14px 16px; border-radius:20px;
+      padding:22px 20px; color:white;
+      position:relative; overflow:hidden;
+    }
+    .wh-card::before {
+      content:''; position:absolute;
+      top:-40px; right:-40px;
+      width:150px; height:150px; border-radius:50%;
+      background:rgba(255,255,255,.1);
+    }
+    .wh-ico { font-size:34px; margin-bottom:10px; position:relative; z-index:1; }
+    .wh-name { font-size:14px; color:rgba(255,255,255,.8); position:relative; z-index:1; }
+    .wh-bal { font-size:28px; font-weight:900; position:relative; z-index:1; margin-top:4px; }
+
+    .act-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px 14px; }
+    .act-btn {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding:14px 6px; background:var(--card); border-radius:14px;
+      border:1px solid var(--border); cursor:pointer;
+      font-size:12px; font-weight:700; color:var(--text2);
+      transition:transform .15s;
+    }
+    .act-btn:active { transform:scale(.95); }
+    .act-btn .a-ico { font-size:22px; }
+    .act-btn.red { color:var(--red); }
+
+    /* ══════════════════════════
+       HISTORY FILTERS
+    ══════════════════════════ */
+    .hist-head {
+      background:var(--card); padding:14px 18px 0;
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:20;
+    }
+    .hist-head h2 { font-size:18px; font-weight:800; margin-bottom:12px; }
+    .filt-row {
+      display:flex; gap:8px; padding-bottom:12px;
+      overflow-x:auto; scrollbar-width:none;
+    }
+    .filt-row::-webkit-scrollbar { display:none; }
     .chip {
-      padding: 6px 14px; border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: transparent; color: var(--text2);
-      font-size: 12px; font-weight: 600; white-space: nowrap;
-      cursor: pointer; transition: all 0.18s; flex-shrink: 0;
+      padding:7px 16px; border-radius:20px;
+      border:1.5px solid var(--border);
+      background:var(--card); color:var(--text2);
+      font-size:12px; font-weight:600; white-space:nowrap;
+      cursor:pointer; flex-shrink:0; transition:all .18s;
     }
-    .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+    .chip.active { background:var(--primary); border-color:var(--primary); color:white; }
 
-    /* ── Empty state ── */
-    .empty { text-align: center; padding: 48px 24px; }
-    .empty .ei { font-size: 52px; margin-bottom: 14px; }
-    .empty .et { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-    .empty .es { font-size: 13px; color: var(--text2); line-height: 1.5; }
-
-    /* ── List Card ── */
-    .list-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 14px; padding: 14px 16px;
-      margin: 0 16px 10px;
+    /* ══════════════════════════
+       NOTES & BILLS
+    ══════════════════════════ */
+    .tab-bar {
+      display:flex; border-bottom:1px solid var(--border);
+      padding:0 18px; background:var(--card); gap:0;
     }
-    .lc-head {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 8px; margin-bottom: 6px;
+    .tab-it {
+      flex:1; padding:10px 8px; font-size:14px; font-weight:700;
+      color:var(--text2); background:none; border:none;
+      cursor:pointer; border-bottom:2px solid transparent;
+      text-align:center; transition:all .2s;
     }
-    .lc-name { font-size: 15px; font-weight: 700; }
-    .lc-meta { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
-    .lc-amount { font-size: 16px; font-weight: 800; }
-    .lc-amount.hutang  { color: var(--red); }
-    .lc-amount.piutang { color: var(--green); }
-    .lc-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .tab-it.active { color:var(--primary); border-bottom-color:var(--primary); }
 
-    /* ── Badges ── */
+    .note-card {
+      background:var(--card); border-radius:14px;
+      padding:14px 16px; margin:0 16px 10px;
+      box-shadow:var(--sh);
+    }
+    .nc-title { font-size:15px; font-weight:800; margin-bottom:4px; }
+    .nc-body { font-size:13px; color:var(--text2); line-height:1.55; }
+    .nc-date { font-size:11px; color:var(--text3); margin-top:8px; }
+    .nc-acts { display:flex; gap:8px; margin-top:10px; }
+
+    .bill-card {
+      background:var(--card); border-radius:14px;
+      padding:14px 16px; margin:0 16px 10px;
+      box-shadow:var(--sh);
+    }
+    .bill-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+    .bill-title { font-size:15px; font-weight:800; }
+    .bill-meta { font-size:12px; color:var(--text2); margin-top:3px; line-height:1.4; }
+    .bill-amt { font-size:16px; font-weight:900; color:var(--red); flex-shrink:0; }
     .badge {
-      display: inline-flex; align-items: center;
-      padding: 3px 9px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+      display:inline-flex; align-items:center;
+      padding:4px 10px; border-radius:20px;
+      font-size:11px; font-weight:700;
     }
-    .badge-paid    { background: rgba(52,211,153,0.15); color: var(--green); }
-    .badge-unpaid  { background: rgba(248,113,113,0.15); color: var(--red); }
-    .badge-overdue { background: rgba(251,191,36,0.15);  color: var(--yellow); }
-    .badge-lunas   { background: rgba(52,211,153,0.1);   color: var(--green); }
+    .badge.paid   { background:var(--green-lt); color:var(--green); }
+    .badge.unpaid { background:var(--red-lt);   color:var(--red); }
+    .badge.late   { background:#fef3c7; color:var(--yellow); }
+    .bill-acts { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
 
-    /* ── Alert ── */
-    .alert {
-      padding: 12px 14px; border-radius: 10px;
-      font-size: 13px; font-weight: 500; margin-bottom: 14px;
-      line-height: 1.6;
+    /* ══════════════════════════
+       MODAL SHEET
+    ══════════════════════════ */
+    .ov {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.45);
+      z-index:200; display:none;
+      align-items:flex-end; justify-content:center;
     }
-    .alert-warn {
-      background: rgba(251,191,36,0.1);
-      border: 1px solid rgba(251,191,36,0.3);
-      color: var(--yellow);
+    .ov.open { display:flex; }
+    .sheet {
+      background:var(--card); border-radius:24px 24px 0 0;
+      width:100%; max-width:480px;
+      max-height:92vh; overflow-y:auto;
+      padding-bottom:28px;
     }
+    .sh-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:14px auto 0; }
+    .sh-title { font-size:18px; font-weight:800; padding:12px 20px 14px; border-bottom:1px solid var(--border); }
+    .sh-body { padding:20px; }
+    .sh-acts { display:flex; gap:10px; }
+    .sh-acts .btn { flex:1; }
 
-    /* ── Toast ── */
+    /* ══════════════════════════
+       CONFIRM DIALOG
+    ══════════════════════════ */
+    .conf-ov {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      z-index:400; display:none;
+      align-items:center; justify-content:center; padding:20px;
+    }
+    .conf-ov.open { display:flex; }
+    .conf-box {
+      background:var(--card); border-radius:20px;
+      padding:24px 22px; width:100%; max-width:320px;
+    }
+    .conf-ico { font-size:40px; margin-bottom:12px; }
+    .conf-ttl { font-size:17px; font-weight:800; margin-bottom:8px; }
+    .conf-txt { font-size:14px; color:var(--text2); margin-bottom:20px; line-height:1.6; }
+    .conf-row { display:flex; gap:10px; }
+    .conf-row .btn { flex:1; }
+
+    /* ══════════════════════════
+       TOAST
+    ══════════════════════════ */
     .toast {
-      position: fixed;
-      bottom: calc(var(--nav-h) + 12px);
-      left: 16px; right: 16px;
-      max-width: 448px; margin: 0 auto;
-      padding: 13px 18px;
-      border-radius: 12px;
-      font-size: 14px; font-weight: 600;
-      z-index: 500;
-      transform: translateY(12px); opacity: 0;
-      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-      pointer-events: none;
-      display: flex; align-items: center; gap: 10px;
+      position:fixed;
+      bottom:calc(var(--nav-h) + 12px);
+      left:16px; right:16px; max-width:448px; margin:0 auto;
+      padding:12px 18px; border-radius:12px;
+      font-size:14px; font-weight:600;
+      z-index:500; display:flex; align-items:center; gap:10px;
+      pointer-events:none; box-shadow:var(--sh2);
+      transform:translateY(12px); opacity:0;
+      transition:all .25s cubic-bezier(.34,1.56,.64,1);
     }
-    .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.t-ok   { background: rgba(52,211,153,0.15);  border: 1px solid rgba(52,211,153,0.3);  color: var(--green); }
-    .toast.t-err  { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
-    .toast.t-info { background: rgba(79,142,247,0.15);  border: 1px solid rgba(79,142,247,0.3);  color: var(--accent); }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.tok  { background:var(--green-lt); color:var(--green); }
+    .toast.terr { background:var(--red-lt);   color:var(--red); }
+    .toast.tinf { background:var(--pri-lt);   color:var(--primary); }
 
-    /* ── Confirm Dialog ── */
-    .dlg-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
-      z-index: 400;
-      display: none; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .dlg-overlay.open { display: flex; }
-    .dlg {
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: 20px; padding: 24px 22px;
-      width: 100%; max-width: 340px;
-    }
-    .dlg-icon  { font-size: 40px; margin-bottom: 14px; }
-    .dlg-title { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
-    .dlg-text  { font-size: 14px; color: var(--text2); margin-bottom: 22px; line-height: 1.6; }
-    .dlg-actions { display: flex; gap: 10px; }
-    .dlg-actions .btn { flex: 1; }
+    /* ── Misc ── */
+    .spacer { height:16px; }
+    .date-group { padding:10px 18px 4px; font-size:12px; font-weight:700; color:var(--text2); }
 
-    /* ── Danger zone ── */
-    .danger-zone {
-      margin: 8px 16px 16px;
-      padding: 16px;
-      border: 1px solid rgba(248,113,113,0.2);
-      border-radius: 14px;
-      background: rgba(248,113,113,0.04);
-    }
-    .danger-zone h3 { font-size: 14px; color: var(--red); font-weight: 700; margin-bottom: 6px; }
-    .danger-zone p  { font-size: 13px; color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
-
-    /* ── Icon Grid ── */
-    .icon-grid {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
-    }
-    .icon-btn {
-      aspect-ratio: 1; border-radius: 10px;
-      border: 2px solid var(--border); background: transparent;
-      cursor: pointer; font-size: 22px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.18s;
-    }
-    .icon-btn.sel { border-color: var(--accent); background: rgba(79,142,247,0.12); }
-
-    /* ── Month label ── */
-    .month-lbl {
-      font-size: 11px; color: var(--text3); font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.8px;
-      padding: 14px 0 6px;
-    }
-
-    @media (max-width: 360px) {
-      .bh-amount { font-size: 28px; }
-      .cat-grid  { grid-template-columns: repeat(3, 1fr); }
-      .icon-grid { grid-template-columns: repeat(5, 1fr); }
+    @media (max-width:360px) {
+      .cat-grid { grid-template-columns:repeat(3,1fr); }
+      .ico-grid { grid-template-columns:repeat(4,1fr); }
+      .bc-amt { font-size:28px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ═══════════════════ APP ═══════════════════ -->
 <div id="app">
 
-  <!-- ── DASHBOARD ── -->
-  <div id="page-dashboard" class="page active">
-    <div class="header">
-      <div class="header-left">
-        <h1>KasKu 💰</h1>
-        <p id="dash-date">Memuat...</p>
+  <!-- ════ BERANDA ════ -->
+  <div id="sc-home" class="screen padnav active">
+
+    <div class="home-top">
+      <div>
+        <h2 id="hm-name" onclick="openProfile()">Nama Pemilik</h2>
+        <p id="hm-date"></p>
       </div>
-      <div class="header-badge">FINANCE</div>
+      <button class="settings-btn" onclick="openProfile()">⚙️</button>
     </div>
 
-    <div class="balance-hero">
-      <div class="bh-decoration">💳</div>
-      <div class="bh-label">SALDO UTAMA</div>
-      <div class="bh-amount" id="dash-balance">Rp 0</div>
-      <div class="bh-sub">
-        <div class="bh-sub-item">
-          <div class="bh-sub-dot" style="background:var(--green)"></div>
-          <span id="bh-inc">+Rp 0</span>
+    <!-- Balance card -->
+    <div style="padding:0 16px; margin:12px 0 0">
+      <div class="bal-card">
+        <div class="bc-row1">
+          <span class="bc-lbl">Total Saldo</span>
+          <button class="eye-btn" id="eye-btn" onclick="toggleHide()">👁️</button>
         </div>
-        <div class="bh-sub-item">
-          <div class="bh-sub-dot" style="background:var(--red)"></div>
-          <span id="bh-exp">−Rp 0</span>
+        <div class="bc-amt" id="hm-bal">Rp 0</div>
+        <div class="bc-sub">Seluruh Dompet · <span id="hm-month"></span></div>
+        <div class="bc-sep"></div>
+        <div class="bc-stats">
+          <div>
+            <div class="bc-stat-lbl"><div class="bc-dot" style="background:#86efac"></div>Pemasukan</div>
+            <div class="bc-stat-amt inc" id="hm-inc">+Rp 0</div>
+          </div>
+          <div style="text-align:right">
+            <div class="bc-stat-lbl" style="justify-content:flex-end"><div class="bc-dot" style="background:#fca5a5"></div>Pengeluaran</div>
+            <div class="bc-stat-amt exp" id="hm-exp">-Rp 0</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="summary-grid">
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(248,113,113,0.12)">🤝</div>
-        <div class="s-card-label">Total Hutang</div>
-        <div class="s-card-value" id="dash-hutang" style="color:var(--red)">Rp 0</div>
-      </div>
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(52,211,153,0.12)">💌</div>
-        <div class="s-card-label">Total Piutang</div>
-        <div class="s-card-value" id="dash-piutang" style="color:var(--green)">Rp 0</div>
-      </div>
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(52,211,153,0.12)">📈</div>
-        <div class="s-card-label">Pemasukan Bulan Ini</div>
-        <div class="s-card-value" id="dash-income" style="color:var(--green)">Rp 0</div>
-      </div>
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(248,113,113,0.12)">📉</div>
-        <div class="s-card-label">Pengeluaran Bulan Ini</div>
-        <div class="s-card-value" id="dash-expense" style="color:var(--red)">Rp 0</div>
-      </div>
+    <!-- Wallets -->
+    <div style="margin:8px 0 4px">
+      <div class="sec-head"><h3>Dompet Saya</h3></div>
+      <div class="wallet-row" id="wallet-row"></div>
     </div>
 
-    <div class="section">
-      <div class="section-head">
-        <span class="section-title">Tagihan Bulan Ini</span>
-        <button class="section-link" onclick="goTab('tagihan')">Lihat Semua →</button>
+    <!-- Recent transactions -->
+    <div style="margin-top:4px">
+      <div class="sec-head">
+        <h3>Transaksi Terbaru</h3>
+        <button class="see-all-btn" id="see-all-btn" style="display:none" onclick="goTo('sc-history')">Lihat Semua</button>
       </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-          <span style="font-size:13px;color:var(--text2)">Progress pembayaran</span>
-          <span style="font-size:13px;font-weight:800" id="dash-bill-count">0 / 0</span>
+      <div id="hm-tx"></div>
+    </div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- ════ TAMBAH / EDIT DOMPET ════ -->
+  <div id="sc-wallet-form" class="screen">
+    <div class="pg-head">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h2 id="wf-title">Tambah Dompet</h2>
+    </div>
+    <div class="form-body">
+      <div class="fg">
+        <label class="fl">Nama Dompet / Bank</label>
+        <input type="text" class="fi" id="wf-name" placeholder="Contoh: BCA, GoPay, Tunai...">
+      </div>
+      <div class="fg">
+        <label class="fl">Saldo Awal</label>
+        <div class="amt-wrap">
+          <span class="amt-pre">Rp</span>
+          <input type="number" class="fi" id="wf-bal" placeholder="0" min="0" inputmode="numeric">
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="dash-bill-bar" style="width:0%"></div>
-        </div>
-        <div style="font-size:12px;color:var(--text2);margin-top:4px" id="dash-bill-txt">Belum ada tagihan</div>
       </div>
-    </div>
-
-    <div class="section">
-      <div class="section-head">
-        <span class="section-title">Transaksi Terakhir</span>
-        <button class="section-link" onclick="goTab('transaksi')">Lihat Semua →</button>
+      <div class="fg">
+        <label class="fl">Ikon</label>
+        <div class="ico-grid" id="wf-ico-grid"></div>
       </div>
-      <div class="card" id="dash-tx-list"></div>
-    </div>
-
-    <div class="danger-zone">
-      <h3>⚠️ Zona Berbahaya</h3>
-      <p>Hapus semua data aplikasi termasuk transaksi, hutang, dan tagihan. Tindakan ini tidak dapat dibatalkan.</p>
-      <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset Semua Data</button>
+      <div class="fg">
+        <label class="fl">Warna</label>
+        <div class="clr-row" id="wf-clr-row"></div>
+      </div>
+      <button class="btn btn-pri" onclick="saveWallet()" style="margin-top:8px">Simpan</button>
     </div>
   </div>
 
-  <!-- ── TRANSAKSI ── -->
-  <div id="page-transaksi" class="page">
-    <div class="header">
-      <div class="header-left">
-        <h1>Transaksi</h1>
-        <p>Catat pemasukan &amp; pengeluaran</p>
-      </div>
+  <!-- ════ DETAIL DOMPET ════ -->
+  <div id="sc-wallet-detail" class="screen">
+    <div class="pg-head">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h2 id="wd-title">Detail Dompet</h2>
     </div>
-    <div class="tabs">
-      <button class="tab-btn active" id="txTab-all"     onclick="setTxTab('all')">Semua</button>
-      <button class="tab-btn"        id="txTab-income"  onclick="setTxTab('income')">Pemasukan</button>
-      <button class="tab-btn"        id="txTab-expense" onclick="setTxTab('expense')">Pengeluaran</button>
+    <div id="wd-hero"></div>
+    <div class="act-row">
+      <div class="act-btn" onclick="editCurrentWallet()"><div class="a-ico">✏️</div>Edit</div>
+      <div class="act-btn" onclick="openTransfer()"><div class="a-ico">↔️</div>Transfer</div>
+      <div class="act-btn red" onclick="delCurrentWallet()"><div class="a-ico">🗑️</div>Hapus</div>
     </div>
-    <div class="filter-row" id="tx-chip-row"></div>
-    <div id="tx-list" style="padding:0 16px"></div>
-    <button class="fab" onclick="openTxModal()">＋</button>
+    <div class="sec-head"><h3>Riwayat Transaksi</h3></div>
+    <div id="wd-tx"></div>
+    <div class="spacer"></div>
   </div>
 
-  <!-- ── HUTANG ── -->
-  <div id="page-hutang" class="page">
-    <div class="header">
-      <div class="header-left">
-        <h1>Hutang &amp; Piutang</h1>
-        <p>Kelola utang piutang Anda</p>
-      </div>
+  <!-- ════ TAMBAH TRANSAKSI ════ -->
+  <div id="sc-add-tx" class="screen">
+    <div class="pg-head">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h2 id="tx-form-title">Tambah Transaksi</h2>
     </div>
-    <div class="summary-grid" style="margin-top:16px">
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(248,113,113,0.12)">📤</div>
-        <div class="s-card-label">Hutang Saya</div>
-        <div class="s-card-value" id="dp-hutang" style="color:var(--red)">Rp 0</div>
+    <div class="form-body">
+      <div class="fg">
+        <label class="fl">Pilih Dompet</label>
+        <select class="fi" id="txf-wallet"></select>
       </div>
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(52,211,153,0.12)">📥</div>
-        <div class="s-card-label">Piutang Saya</div>
-        <div class="s-card-value" id="dp-piutang" style="color:var(--green)">Rp 0</div>
+      <div class="fg">
+        <label class="fl">Jenis Transaksi</label>
+        <div class="type-row">
+          <button class="type-btn" id="tt-inc" onclick="setTxType('income')">↑ Pemasukan</button>
+          <button class="type-btn t-exp" id="tt-exp" onclick="setTxType('expense')">↓ Pengeluaran</button>
+        </div>
       </div>
+      <div class="fg">
+        <label class="fl">Kategori</label>
+        <div class="cat-grid" id="txf-cats"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Nominal</label>
+        <div class="amt-wrap">
+          <span class="amt-pre">Rp</span>
+          <input type="number" class="fi" id="txf-amt" placeholder="0" min="0" inputmode="numeric">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Tanggal</label>
+        <input type="date" class="fi" id="txf-date">
+      </div>
+      <div class="fg">
+        <label class="fl">Catatan <span style="text-transform:none;font-weight:400;color:var(--text3)">(opsional)</span></label>
+        <input type="text" class="fi" id="txf-note" placeholder="Tambahkan catatan...">
+      </div>
+      <button class="btn btn-pri" onclick="saveTx()" style="margin-top:4px">Simpan Transaksi</button>
     </div>
-    <div class="tabs">
-      <button class="tab-btn active" id="dpTab-hutang"  onclick="setDpTab('hutang')">Hutang</button>
-      <button class="tab-btn"        id="dpTab-piutang" onclick="setDpTab('piutang')">Piutang</button>
-      <button class="tab-btn"        id="dpTab-lunas"   onclick="setDpTab('lunas')">Lunas</button>
-    </div>
-    <div id="dp-list"></div>
-    <button class="fab" onclick="openDebtModal()">＋</button>
   </div>
 
-  <!-- ── TAGIHAN ── -->
-  <div id="page-tagihan" class="page">
-    <div class="header">
-      <div class="header-left">
-        <h1>Tagihan Bulanan</h1>
-        <p id="bill-month-lbl">Tagihan bulan ini</p>
+  <!-- ════ RIWAYAT ════ -->
+  <div id="sc-history" class="screen padnav">
+    <div class="hist-head">
+      <h2>Riwayat Transaksi</h2>
+      <div class="filt-row" id="hist-chips"></div>
+    </div>
+    <div id="hist-list"></div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- ════ CATATAN & TAGIHAN ════ -->
+  <div id="sc-notes" class="screen padnav">
+    <div style="background:var(--card);position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border)">
+      <h2 style="font-size:18px;font-weight:800;padding:14px 18px 0">Catatan &amp; Tagihan</h2>
+      <div class="tab-bar">
+        <button class="tab-it active" id="tab-catatan" onclick="setTab('catatan')">Catatan</button>
+        <button class="tab-it" id="tab-tagihan" onclick="setTab('tagihan')">Tagihan</button>
       </div>
     </div>
-    <div class="summary-grid" style="margin-top:16px">
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(248,113,113,0.12)">⏳</div>
-        <div class="s-card-label">Belum Dibayar</div>
-        <div class="s-card-value" id="bill-unpaid-total" style="color:var(--red)">Rp 0</div>
+    <div id="panel-catatan">
+      <div style="padding:14px 16px 6px;display:flex;justify-content:flex-end">
+        <button class="btn btn-pri btn-sm" style="width:auto" onclick="openNoteForm()">+ Tambah Catatan</button>
       </div>
-      <div class="s-card">
-        <div class="s-card-icon" style="background:rgba(52,211,153,0.12)">✅</div>
-        <div class="s-card-label">Sudah Dibayar</div>
-        <div class="s-card-value" id="bill-paid-total" style="color:var(--green)">Rp 0</div>
-      </div>
+      <div id="notes-list"></div>
     </div>
-    <div id="bill-list" style="margin-top:6px"></div>
-    <button class="fab" onclick="openBillModal()">＋</button>
+    <div id="panel-tagihan" style="display:none">
+      <div style="padding:14px 16px 6px;display:flex;justify-content:flex-end">
+        <button class="btn btn-pri btn-sm" style="width:auto" onclick="openBillForm()">+ Tambah Tagihan</button>
+      </div>
+      <div id="bills-list"></div>
+    </div>
+    <div class="spacer"></div>
   </div>
 
 </div><!-- #app -->
 
-<!-- ── BOTTOM NAV ── -->
-<nav class="bottom-nav">
-  <button class="nav-btn active" id="nav-dashboard" onclick="goTab('dashboard')">
+<!-- ════ BOTTOM NAV ════ -->
+<nav class="bot-nav" id="bot-nav">
+  <button class="nav-btn active" id="nb-home" onclick="goTo('sc-home')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-      <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
-    Dashboard
+    Beranda
   </button>
-  <button class="nav-btn" id="nav-transaksi" onclick="goTab('transaksi')">
+  <button class="nav-fab" onclick="goTo('sc-add-tx')">＋</button>
+  <button class="nav-btn" id="nb-history" onclick="goTo('sc-history')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M8 17V4M8 4L4 8M8 4l4 4"/><path d="M16 7v13m0 0l4-4m-4 4l-4-4"/>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
     </svg>
-    Transaksi
+    Riwayat
   </button>
-  <button class="nav-btn" id="nav-hutang" onclick="goTab('hutang')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-    Hutang
-  </button>
-  <button class="nav-btn" id="nav-tagihan" onclick="goTab('tagihan')">
+  <button class="nav-btn" id="nb-notes" onclick="goTo('sc-notes')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
       <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
+      <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
     </svg>
-    Tagihan
+    Catatan
   </button>
 </nav>
 
-<!-- ═══════════ MODAL: TRANSAKSI ═══════════ -->
-<div class="modal-overlay" id="modal-tx">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Tambah Transaksi</div>
-    <div class="modal-body">
-      <div class="type-toggle">
-        <button class="type-btn sel-income" id="txType-income"  onclick="setTxType('income')">↑ Pemasukan</button>
-        <button class="type-btn"            id="txType-expense" onclick="setTxType('expense')">↓ Pengeluaran</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nominal</label>
-        <div class="amount-input-wrap">
-          <span class="amount-prefix">Rp</span>
-          <input type="number" class="form-input" id="tx-amount" placeholder="0" min="0" inputmode="numeric">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Kategori</label>
-        <div class="cat-grid" id="tx-cat-grid"></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Catatan <span style="text-transform:none;color:var(--text3)">(opsional)</span></label>
-        <input type="text" class="form-input" id="tx-note" placeholder="Tambahkan catatan...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tanggal</label>
-        <input type="date" class="form-input" id="tx-date">
-      </div>
-      <div class="alert alert-warn" id="tx-warn" style="display:none">
-        ⚠️ <strong>Saldo tidak mencukupi!</strong> Saldo Anda akan menjadi negatif jika melanjutkan. Tekan Simpan lagi untuk tetap lanjut.
-      </div>
-      <button class="btn btn-primary" onclick="saveTx()">Simpan Transaksi</button>
+<!-- ═══ MODAL: NOTE ═══ -->
+<div class="ov" id="ov-note">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title" id="note-ttl">Tambah Catatan</div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Judul</label><input type="text" class="fi" id="nf-title" placeholder="Judul catatan..."></div>
+      <div class="fg"><label class="fl">Isi Catatan</label><textarea class="fi" id="nf-body" rows="4" placeholder="Tulis catatan..."></textarea></div>
+      <button class="btn btn-pri" onclick="saveNote()">Simpan</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ MODAL: HUTANG ═══════════ -->
-<div class="modal-overlay" id="modal-debt">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Tambah Hutang / Piutang</div>
-    <div class="modal-body">
-      <div class="segtab">
-        <button class="segtab-btn sel-hutang"  id="dpType-hutang"  onclick="setDebtType('hutang')">📤 Hutang Saya</button>
-        <button class="segtab-btn"             id="dpType-piutang" onclick="setDebtType('piutang')">📥 Piutang Saya</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nama Orang</label>
-        <input type="text" class="form-input" id="dp-name" placeholder="Nama orang...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nominal</label>
-        <div class="amount-input-wrap">
-          <span class="amount-prefix">Rp</span>
-          <input type="number" class="form-input" id="dp-amount" placeholder="0" min="0" inputmode="numeric">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Keterangan <span style="text-transform:none;color:var(--text3)">(opsional)</span></label>
-        <input type="text" class="form-input" id="dp-note" placeholder="Keterangan...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tanggal</label>
-        <input type="date" class="form-input" id="dp-date">
-      </div>
-      <button class="btn btn-primary" onclick="saveDebt()">Simpan</button>
+<!-- ═══ MODAL: BILL ═══ -->
+<div class="ov" id="ov-bill">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title" id="bill-ttl">Tambah Tagihan</div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Judul Tagihan</label><input type="text" class="fi" id="bf-title" placeholder="Contoh: Listrik, Internet..."></div>
+      <div class="fg"><label class="fl">Nominal</label><div class="amt-wrap"><span class="amt-pre">Rp</span><input type="number" class="fi" id="bf-amt" placeholder="0" min="0" inputmode="numeric"></div></div>
+      <div class="fg"><label class="fl">Tanggal Jatuh Tempo</label><input type="date" class="fi" id="bf-due"></div>
+      <div class="fg"><label class="fl">Keterangan <span style="text-transform:none;font-weight:400;color:var(--text3)">(opsional)</span></label><input type="text" class="fi" id="bf-note" placeholder="Keterangan..."></div>
+      <button class="btn btn-pri" onclick="saveBill()">Simpan</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ MODAL: TAGIHAN ═══════════ -->
-<div class="modal-overlay" id="modal-bill">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Tambah Tagihan Rutin</div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Nama Tagihan</label>
-        <input type="text" class="form-input" id="bill-name" placeholder="Contoh: Listrik, Internet, Netflix...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ikon</label>
-        <div class="icon-grid" id="bill-icon-grid"></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nominal</label>
-        <div class="amount-input-wrap">
-          <span class="amount-prefix">Rp</span>
-          <input type="number" class="form-input" id="bill-amount" placeholder="0" min="0" inputmode="numeric">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Tanggal Jatuh Tempo (setiap bulan)</label>
-        <input type="number" class="form-input" id="bill-due-day" placeholder="Contoh: 5  →  jatuh tempo tgl 5 setiap bulan" min="1" max="31">
-      </div>
-      <button class="btn btn-primary" onclick="saveBill()">Simpan Tagihan</button>
+<!-- ═══ MODAL: TRANSFER ═══ -->
+<div class="ov" id="ov-transfer">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Transfer Saldo</div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Dari Dompet</label><select class="fi" id="tf-from"></select></div>
+      <div class="fg"><label class="fl">Ke Dompet</label><select class="fi" id="tf-to"></select></div>
+      <div class="fg"><label class="fl">Nominal</label><div class="amt-wrap"><span class="amt-pre">Rp</span><input type="number" class="fi" id="tf-amt" placeholder="0" min="0" inputmode="numeric"></div></div>
+      <div class="fg"><label class="fl">Tanggal</label><input type="date" class="fi" id="tf-date"></div>
+      <div class="fg"><label class="fl">Catatan <span style="text-transform:none;font-weight:400;color:var(--text3)">(opsional)</span></label><input type="text" class="fi" id="tf-note" placeholder="Catatan transfer..."></div>
+      <button class="btn btn-pri" onclick="doTransfer()">Transfer</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ CONFIRM DIALOG ═══════════ -->
-<div class="dlg-overlay" id="dlg">
-  <div class="dlg">
-    <div class="dlg-icon"  id="dlg-icon">❓</div>
-    <div class="dlg-title" id="dlg-title">Konfirmasi</div>
-    <div class="dlg-text"  id="dlg-text">Apakah Anda yakin?</div>
-    <div class="dlg-actions">
-      <button class="btn btn-ghost" onclick="closeDlg()">Batal</button>
-      <button class="btn"           id="dlg-ok" onclick="execDlg()">OK</button>
+<!-- ═══ MODAL: PROFILE ═══ -->
+<div class="ov" id="ov-profile">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Edit Profil</div>
+    <div class="sh-body">
+      <div class="fg"><label class="fl">Nama Pemilik</label><input type="text" class="fi" id="pf-name" placeholder="Masukkan nama Anda..."></div>
+      <button class="btn btn-pri" onclick="saveProfile()">Simpan</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ TOAST ═══════════ -->
+<!-- ═══ CONFIRM ═══ -->
+<div class="conf-ov" id="conf-ov">
+  <div class="conf-box">
+    <div class="conf-ico" id="c-ico">❓</div>
+    <div class="conf-ttl" id="c-ttl">Konfirmasi</div>
+    <div class="conf-txt" id="c-txt"></div>
+    <div class="conf-row">
+      <button class="btn btn-out" onclick="closeConf()">Batal</button>
+      <button class="btn" id="c-ok" onclick="doConf()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
 <div class="toast" id="toast"></div>
 
-<!-- ═══════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════ -->
 <script>
 'use strict';
 
-/* ─── State & Storage ─── */
-const STORE_KEY = 'kasku_v1';
+/* ─── State ─── */
+const KEY = 'kasku_v2';
+
+function freshState() {
+  return { profile:{ name:'Nama Pemilik' }, wallets:[], transactions:[], notes:[], bills:[], hidden:false };
+}
 
 function loadState() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || freshState(); }
-  catch { return freshState(); }
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d) return Object.assign(freshState(), d);
+
+    // Migrate from v1
+    const old = JSON.parse(localStorage.getItem('kasku_v1') || 'null');
+    if (old) {
+      const s = freshState();
+      if (old.profile) s.profile = old.profile;
+      if (old.bills)   s.bills   = old.bills;
+      if (old.balance != null || (old.transactions && old.transactions.length)) {
+        const wId = uid();
+        s.wallets.push({ id:wId, name:'Dompet Utama', icon:'👛', color:'#5856d6', balance: old.balance || 0 });
+        (old.transactions || []).forEach(t => s.transactions.push({ ...t, walletId:wId }));
+      }
+      return s;
+    }
+    return freshState();
+  } catch { return freshState(); }
 }
-function freshState() {
-  return { balance: 0, transactions: [], debts: [], bills: [] };
-}
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(S)); }
 
 let S = loadState();
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
 
-/* ─── Category definitions ─── */
-const CAT_IN = [
-  { id:'gaji',       ic:'💼', lbl:'Gaji' },
-  { id:'freelance',  ic:'💻', lbl:'Freelance' },
-  { id:'investasi',  ic:'📈', lbl:'Investasi' },
-  { id:'bonus',      ic:'🎁', lbl:'Bonus' },
-  { id:'bisnis',     ic:'🏪', lbl:'Bisnis' },
-  { id:'lain_in',    ic:'💰', lbl:'Lainnya' },
-];
-const CAT_EX = [
-  { id:'makan',      ic:'🍜', lbl:'Makan' },
-  { id:'transport',  ic:'🚗', lbl:'Transport' },
-  { id:'belanja',    ic:'🛒', lbl:'Belanja' },
-  { id:'kesehatan',  ic:'🏥', lbl:'Kesehatan' },
-  { id:'hiburan',    ic:'🎬', lbl:'Hiburan' },
-  { id:'pendidikan', ic:'📚', lbl:'Pendidikan' },
-  { id:'rumah',      ic:'🏠', lbl:'Rumah' },
-  { id:'tagihan_ex', ic:'⚡', lbl:'Tagihan' },
-  { id:'pakaian',    ic:'👗', lbl:'Pakaian' },
-  { id:'sosial',     ic:'🤝', lbl:'Sosial' },
-  { id:'lain_ex',    ic:'💸', lbl:'Lainnya' },
-];
-const BILL_ICONS = ['⚡','📶','🌊','🔥','📺','🏠','📱','🎮','🎵','📰','🚿','🏥','🚌','🌐','🎓','🛡️'];
-const ALL_CATS = [...CAT_IN, ...CAT_EX];
-
-function catInfo(id) {
-  return ALL_CATS.find(c => c.id === id) || { ic: '💰', lbl: id || 'Lainnya' };
-}
-
-/* ─── Utilities ─── */
-function rp(n) {
-  return 'Rp ' + Math.abs(n || 0).toLocaleString('id-ID');
-}
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-function monthKey() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-}
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+/* ─── Utils ─── */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function rp(n, h) { return h ? '••••••' : 'Rp ' + Math.abs(n||0).toLocaleString('id-ID'); }
+function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmtDate(s) {
   if (!s) return '–';
   const d = new Date(s + 'T00:00:00');
-  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+}
+function fmtShort(s) {
+  if (!s) return '–';
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+}
+function monthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function monthName() {
+  const d = new Date();
+  const M=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return M[d.getMonth()] + ' ' + d.getFullYear();
 }
 function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+/* ─── Categories ─── */
+const CAT_IN = [
+  {id:'gaji',ic:'💼',lbl:'Gaji'},{id:'freelance',ic:'💻',lbl:'Freelance'},
+  {id:'investasi',ic:'📈',lbl:'Investasi'},{id:'bonus',ic:'🎁',lbl:'Bonus'},
+  {id:'bisnis',ic:'🏪',lbl:'Bisnis'},{id:'tfr_in',ic:'💸',lbl:'Transfer Masuk'},
+  {id:'lain_in',ic:'💰',lbl:'Lainnya'},
+];
+const CAT_EX = [
+  {id:'makan',ic:'🍜',lbl:'Makan'},{id:'transport',ic:'🚗',lbl:'Transport'},
+  {id:'belanja',ic:'🛒',lbl:'Belanja'},{id:'kesehatan',ic:'🏥',lbl:'Kesehatan'},
+  {id:'hiburan',ic:'🎬',lbl:'Hiburan'},{id:'pendidikan',ic:'📚',lbl:'Pendidikan'},
+  {id:'rumah',ic:'🏠',lbl:'Rumah'},{id:'tagihan',ic:'⚡',lbl:'Tagihan'},
+  {id:'pakaian',ic:'👗',lbl:'Pakaian'},{id:'sosial',ic:'🤝',lbl:'Sosial'},
+  {id:'tfr_out',ic:'↗️',lbl:'Transfer'},{id:'lain_ex',ic:'💸',lbl:'Lainnya'},
+];
+const ALL_CATS = [...CAT_IN, ...CAT_EX];
+function catInfo(id) { return ALL_CATS.find(c=>c.id===id) || {ic:'💰',lbl:id||'Lainnya'}; }
+
+/* ─── Wallet presets ─── */
+const W_ICONS = ['👛','💳','🏦','🪙','💵','📱','💻','🏧','💎','🏪','💰','📊'];
+const W_COLORS = ['#5856d6','#f97316','#10b981','#ef4444','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#84cc16','#6366f1','#14b8a6','#64748b'];
 
 /* ─── Navigation ─── */
-let activeTab = 'dashboard';
+let _stack = ['sc-home'];
+let _curWallet = null;
+let _editWallet = null;
+let _editNote = null;
+let _editBill = null;
+let _txType = 'expense';
+let _txCat = null;
+let _wIco = '👛';
+let _wClr = '#5856d6';
+let _notesTab = 'catatan';
+let _histTypeF = 'all';
+let _histWalF = '';
 
-function goTab(tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history', 'sc-notes':'nb-notes' };
+const NO_NAV = ['sc-wallet-form','sc-wallet-detail','sc-add-tx'];
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('bot-nav').style.display = NO_NAV.includes(id) ? 'none' : '';
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  document.getElementById('nav-'  + tab).classList.add('active');
-  activeTab = tab;
-  ({ dashboard: renderDashboard, transaksi: renderTx, hutang: renderDp, tagihan: renderBills })[tab]();
+  if (NAV_SCREENS[id]) document.getElementById(NAV_SCREENS[id]).classList.add('active');
+  if (_stack[_stack.length-1] !== id) _stack.push(id);
+  const R = { 'sc-home':renderHome, 'sc-history':renderHistory, 'sc-notes':renderNotes, 'sc-add-tx':setupAddTx };
+  if (R[id]) R[id]();
 }
 
-/* ═══════════════════════════════════
-   DASHBOARD
-═══════════════════════════════════ */
-function renderDashboard() {
+function goBack() {
+  _stack.pop();
+  const prev = _stack[_stack.length-1] || 'sc-home';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(prev).classList.add('active');
+  document.getElementById('bot-nav').style.display = NO_NAV.includes(prev) ? 'none' : '';
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (NAV_SCREENS[prev]) document.getElementById(NAV_SCREENS[prev]).classList.add('active');
+  const R = { 'sc-home':renderHome, 'sc-history':renderHistory, 'sc-notes':renderNotes };
+  if (R[prev]) R[prev]();
+}
+
+/* ════════════════════════════
+   BERANDA
+════════════════════════════ */
+function renderHome() {
   const now = new Date();
-  const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
-                  'Juli','Agustus','September','Oktober','November','Desember'];
-  document.getElementById('dash-date').textContent =
-    DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
+  const DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const MON  = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('hm-name').textContent = S.profile.name;
+  document.getElementById('hm-date').textContent = DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MON[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('hm-month').textContent = monthName();
 
-  /* Balance */
-  const bal = S.balance;
-  const balEl = document.getElementById('dash-balance');
-  balEl.textContent = (bal < 0 ? '−' : '') + rp(bal);
-  balEl.className = 'bh-amount' + (bal < 0 ? ' negative' : '');
+  const h = S.hidden;
+  const totBal = S.wallets.reduce((a,w) => a + (w.balance||0), 0);
+  document.getElementById('hm-bal').textContent = h ? '••••••' : rp(totBal);
+  document.getElementById('eye-btn').textContent = h ? '🙈' : '👁️';
 
-  /* Monthly income / expense */
   const mk = monthKey();
   const mTx = S.transactions.filter(t => t.date && t.date.startsWith(mk));
-  const mInc = mTx.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-  const mExp = mTx.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
-  document.getElementById('bh-inc').textContent = '+' + rp(mInc);
-  document.getElementById('bh-exp').textContent = '−' + rp(mExp);
-  document.getElementById('dash-income').textContent  = rp(mInc);
-  document.getElementById('dash-expense').textContent = rp(mExp);
+  const mInc = mTx.filter(t => t.type==='income').reduce((a,t) => a+t.amount, 0);
+  const mExp = mTx.filter(t => t.type==='expense').reduce((a,t) => a+t.amount, 0);
+  document.getElementById('hm-inc').textContent = h ? '••••' : '+' + rp(mInc);
+  document.getElementById('hm-exp').textContent = h ? '••••' : '-' + rp(mExp);
 
-  /* Debts */
-  const active = S.debts.filter(d => !d.paid);
-  document.getElementById('dash-hutang').textContent  = rp(active.filter(d => d.type === 'hutang').reduce((a, d) => a + d.amount, 0));
-  document.getElementById('dash-piutang').textContent = rp(active.filter(d => d.type === 'piutang').reduce((a, d) => a + d.amount, 0));
+  // Wallet cards
+  const row = document.getElementById('wallet-row');
+  row.innerHTML = S.wallets.map(w => {
+    const lightBg = w.color + '22';
+    return `<div class="wcard" onclick="openWallet('${w.id}')">
+      <div class="wcard-top" style="background:${lightBg}"><span>${w.icon||'👛'}</span></div>
+      <div class="wcard-body">
+        <div class="wcard-name">${esc(w.name)}</div>
+        <div class="wcard-bal">${h?'••••':rp(w.balance)}</div>
+        <div class="wcard-adj">✏️ Sesuaikan</div>
+      </div>
+    </div>`;
+  }).join('') + `<div class="wcard-add" onclick="openAddWallet()">
+    <div class="wcard-add-ico">＋</div>
+    <span>Tambah<br>Dompet</span>
+  </div>`;
 
-  /* Bills */
-  const paidB  = S.bills.filter(b => b.lastPaid === mk);
-  const totalB = S.bills.length;
-  const paidAmt  = paidB.reduce((a, b) => a + b.amount, 0);
-  const totalAmt = S.bills.reduce((a, b) => a + b.amount, 0);
-  const pct = totalB > 0 ? (paidB.length / totalB * 100) : 0;
-  document.getElementById('dash-bill-count').textContent = paidB.length + ' / ' + totalB;
-  document.getElementById('dash-bill-bar').style.width   = pct + '%';
-  document.getElementById('dash-bill-txt').textContent   =
-    totalB === 0 ? 'Belum ada tagihan yang ditambahkan'
-    : 'Sudah bayar ' + rp(paidAmt) + ' dari total ' + rp(totalAmt);
-
-  /* Recent 5 transactions */
-  const recent = [...S.transactions]
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-    .slice(0, 5);
-  const el = document.getElementById('dash-tx-list');
-  if (recent.length === 0) {
-    el.innerHTML = '<div class="empty" style="padding:24px 0">' +
-      '<div class="ei">📭</div>' +
-      '<div class="et">Belum Ada Transaksi</div>' +
-      '<div class="es">Mulai catat pemasukan atau pengeluaran Anda</div>' +
-      '</div>';
+  // Recent tx
+  const recent = [...S.transactions].sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0,10);
+  const seeAll = document.getElementById('see-all-btn');
+  seeAll.style.display = S.transactions.length > 10 ? '' : 'none';
+  const txEl = document.getElementById('hm-tx');
+  if (!recent.length) {
+    txEl.innerHTML = '<div class="empty"><div class="ei">📭</div><div class="et">Belum Ada Transaksi</div><div class="es">Tekan tombol ＋ di bawah untuk mencatat transaksi</div></div>';
   } else {
-    el.innerHTML = recent.map(t => txRow(t, false)).join('');
+    txEl.innerHTML = recent.map(t => txRow(t, false)).join('');
   }
-}
-
-/* ═══════════════════════════════════
-   TRANSAKSI
-═══════════════════════════════════ */
-let txTab = 'all', txCatF = 'all';
-
-function renderTx() {
-  /* Chips */
-  const cats = txTab === 'income' ? CAT_IN : txTab === 'expense' ? CAT_EX : ALL_CATS;
-  document.getElementById('tx-chip-row').innerHTML =
-    '<button class="chip' + (txCatF === 'all' ? ' active' : '') + '" onclick="setTxCat(\'all\')">Semua</button>' +
-    cats.map(c =>
-      '<button class="chip' + (txCatF === c.id ? ' active' : '') + '" onclick="setTxCat(\'' + c.id + '\')">' +
-      c.ic + ' ' + c.lbl + '</button>'
-    ).join('');
-
-  /* Filter & sort */
-  let list = [...S.transactions];
-  if (txTab !== 'all') list = list.filter(t => t.type === txTab);
-  if (txCatF !== 'all') list = list.filter(t => t.category === txCatF);
-  list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-  const el = document.getElementById('tx-list');
-  if (list.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="ei">🔍</div>' +
-      '<div class="et">Tidak Ada Transaksi</div>' +
-      '<div class="es">Tidak ada data yang sesuai dengan filter yang dipilih</div></div>';
-    return;
-  }
-
-  /* Group by date */
-  const groups = {};
-  list.forEach(t => { (groups[t.date || ''] = groups[t.date || ''] || []).push(t); });
-
-  el.innerHTML = Object.keys(groups)
-    .sort((a, b) => b.localeCompare(a))
-    .map(date =>
-      '<div><div class="month-lbl">' + fmtDate(date) + '</div>' +
-      '<div class="card" style="padding:4px 12px">' +
-      groups[date].map(t => txRow(t, true)).join('') +
-      '</div></div>'
-    ).join('');
 }
 
 function txRow(t, showDel) {
   const c  = catInfo(t.category);
-  const bg = t.type === 'income' ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)';
+  const w  = S.wallets.find(x => x.id === t.walletId);
+  const h  = S.hidden;
+  const inc = t.type === 'income';
+  const bg = inc ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.1)';
   const del = showDel
-    ? '<button onclick="deleteTx(\'' + t.id + '\')" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1;padding:2px 0 2px 4px">×</button>'
-    : '';
-  return '<div class="tx-item">' +
-    '<div class="tx-ico" style="background:' + bg + '">' + c.ic + '</div>' +
-    '<div class="tx-info">' +
-      '<div class="tx-name">' + esc(t.note || c.lbl) + '</div>' +
-      '<div class="tx-meta">' + c.lbl + (showDel ? '' : ' · ' + fmtDate(t.date)) + '</div>' +
-    '</div>' +
-    '<div class="tx-right">' +
-      '<span class="tx-amount ' + t.type + '">' + (t.type === 'income' ? '+' : '−') + rp(t.amount) + '</span>' +
-      del +
-    '</div></div>';
+    ? `<button class="del-btn" onclick="delTx('${t.id}',event)">×</button>` : '';
+  return `<div class="tx-item">
+    <div class="tx-ico" style="background:${bg}">${c.ic}</div>
+    <div class="tx-info">
+      <div class="tx-name">${esc(t.note || c.lbl)}</div>
+      <div class="tx-meta">${esc(w?.name||'–')} · ${fmtShort(t.date)}</div>
+    </div>
+    <div class="tx-right">
+      <div class="tx-amt ${inc?'inc':'exp'}">${h?'••':(inc?'+':'-')+rp(t.amount)}</div>
+      ${del}
+    </div>
+  </div>`;
 }
 
-function setTxTab(tab) {
-  txTab = tab; txCatF = 'all';
-  ['all','income','expense'].forEach(t => {
-    document.getElementById('txTab-' + t).classList.toggle('active', t === tab);
-  });
-  renderTx();
-}
-function setTxCat(cat) { txCatF = cat; renderTx(); }
+function toggleHide() { S.hidden = !S.hidden; save(); renderHome(); }
 
-/* ── Tx Modal state ── */
-let _txType = 'income', _txCat = null, _txWarnShown = false;
-
-function openTxModal() {
-  _txType = 'income'; _txCat = null; _txWarnShown = false;
-  document.getElementById('tx-amount').value = '';
-  document.getElementById('tx-note').value   = '';
-  document.getElementById('tx-date').value   = todayStr();
-  document.getElementById('tx-warn').style.display = 'none';
-  setTxType('income');
-  openModal('modal-tx');
+/* ════════════════════════════
+   WALLET FORM
+════════════════════════════ */
+function openAddWallet() {
+  _editWallet = null; _wIco = '👛'; _wClr = '#5856d6';
+  document.getElementById('wf-title').textContent = 'Tambah Dompet';
+  document.getElementById('wf-name').value = '';
+  document.getElementById('wf-bal').value = '';
+  buildWalletForm();
+  goTo('sc-wallet-form');
 }
 
-function setTxType(type) {
-  _txType = type; _txCat = null; _txWarnShown = false;
-  document.getElementById('tx-warn').style.display = 'none';
-  document.getElementById('txType-income').className  = 'type-btn' + (type === 'income'  ? ' sel-income'  : '');
-  document.getElementById('txType-expense').className = 'type-btn' + (type === 'expense' ? ' sel-expense' : '');
-  const cats = type === 'income' ? CAT_IN : CAT_EX;
-  document.getElementById('tx-cat-grid').innerHTML = cats.map(c =>
-    '<button class="cat-btn" id="cb-' + c.id + '" onclick="pickTxCat(\'' + c.id + '\')">' +
-    '<span class="ci">' + c.ic + '</span>' + c.lbl + '</button>'
+function editCurrentWallet() {
+  const w = S.wallets.find(x => x.id === _curWallet);
+  if (!w) return;
+  _editWallet = w.id; _wIco = w.icon; _wClr = w.color;
+  document.getElementById('wf-title').textContent = 'Edit Dompet';
+  document.getElementById('wf-name').value = w.name;
+  document.getElementById('wf-bal').value = w.balance;
+  buildWalletForm();
+  goTo('sc-wallet-form');
+}
+
+function buildWalletForm() {
+  document.getElementById('wf-ico-grid').innerHTML = W_ICONS.map(ic =>
+    `<button class="ico-btn${ic===_wIco?' sel':''}" onclick="pickIco('${ic}',this)">${ic}</button>`
+  ).join('');
+  document.getElementById('wf-clr-row').innerHTML = W_COLORS.map(c =>
+    `<div class="clr-dot${c===_wClr?' sel':''}" style="background:${c}" onclick="pickClr('${c}',this)"></div>`
   ).join('');
 }
 
-function pickTxCat(id) {
+function pickIco(ic, el) {
+  _wIco = ic;
+  document.querySelectorAll('#wf-ico-grid .ico-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickClr(c, el) {
+  _wClr = c;
+  document.querySelectorAll('.clr-dot').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function saveWallet() {
+  const name = document.getElementById('wf-name').value.trim();
+  const bal  = parseFloat(document.getElementById('wf-bal').value) || 0;
+  if (!name) return toast('Masukkan nama dompet','err');
+  if (_editWallet) {
+    const w = S.wallets.find(x => x.id === _editWallet);
+    if (w) Object.assign(w, { name, balance:bal, icon:_wIco, color:_wClr });
+  } else {
+    S.wallets.push({ id:uid(), name, icon:_wIco, color:_wClr, balance:bal });
+  }
+  save(); toast(_editWallet ? 'Dompet diperbarui ✓' : 'Dompet ditambahkan ✓');
+  goBack();
+}
+
+/* ════════════════════════════
+   WALLET DETAIL
+════════════════════════════ */
+function openWallet(id) {
+  _curWallet = id;
+  const w = S.wallets.find(x => x.id === id);
+  if (!w) return;
+  document.getElementById('wd-title').textContent = w.name;
+  document.getElementById('wd-hero').innerHTML = `
+    <div class="wh-card" style="background:linear-gradient(135deg,${w.color}dd,${w.color}88)">
+      <div class="wh-ico">${w.icon}</div>
+      <div class="wh-name">${esc(w.name)}</div>
+      <div class="wh-bal">${rp(w.balance)}</div>
+    </div>`;
+
+  const txs = S.transactions.filter(t => t.walletId===id)
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const el = document.getElementById('wd-tx');
+  el.innerHTML = txs.length ? txs.map(t => {
+    const c = catInfo(t.category);
+    const inc = t.type==='income';
+    const bg = inc ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.1)';
+    return `<div class="tx-item">
+      <div class="tx-ico" style="background:${bg}">${c.ic}</div>
+      <div class="tx-info">
+        <div class="tx-name">${esc(t.note||c.lbl)}</div>
+        <div class="tx-meta">${c.lbl} · ${fmtDate(t.date)}</div>
+      </div>
+      <div class="tx-right">
+        <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+':'-'}${rp(t.amount)}</div>
+        <button class="del-btn" onclick="delTxWallet('${t.id}',event)">×</button>
+      </div>
+    </div>`;
+  }).join('')
+  : '<div class="empty"><div class="ei">📭</div><div class="et">Belum Ada Transaksi</div><div class="es">Belum ada transaksi untuk dompet ini</div></div>';
+
+  _stack.push('sc-wallet-detail');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('sc-wallet-detail').classList.add('active');
+  document.getElementById('bot-nav').style.display = 'none';
+}
+
+function delTxWallet(id, e) {
+  e && e.stopPropagation();
+  const t = S.transactions.find(x => x.id === id);
+  if (!t) return;
+  confirm2('🗑️','Hapus Transaksi?','Transaksi ini akan dihapus dan saldo dompet diperbarui.','Hapus','btn-del', () => {
+    const w = S.wallets.find(x => x.id === t.walletId);
+    if (w) w.balance += (t.type==='income' ? -t.amount : t.amount);
+    S.transactions = S.transactions.filter(x => x.id !== id);
+    save(); toast('Transaksi dihapus'); openWallet(_curWallet);
+  });
+}
+
+function delCurrentWallet() {
+  const w = S.wallets.find(x => x.id === _curWallet);
+  if (!w) return;
+  confirm2('🗑️','Hapus Dompet?',`Dompet "${esc(w.name)}" dan semua transaksinya akan dihapus permanen.`,'Hapus','btn-del', () => {
+    S.wallets = S.wallets.filter(x => x.id !== _curWallet);
+    S.transactions = S.transactions.filter(t => t.walletId !== _curWallet);
+    save(); toast('Dompet dihapus'); goBack(); renderHome();
+  });
+}
+
+/* ════════════════════════════
+   TRANSFER
+════════════════════════════ */
+function openTransfer() {
+  if (S.wallets.length < 2) return toast('Minimal 2 dompet untuk transfer','err');
+  const opts = S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('');
+  document.getElementById('tf-from').innerHTML = opts;
+  document.getElementById('tf-to').innerHTML   = opts;
+  // Pre-select current wallet as "from"
+  document.getElementById('tf-from').value = _curWallet;
+  const others = S.wallets.filter(x => x.id !== _curWallet);
+  if (others.length) document.getElementById('tf-to').value = others[0].id;
+  document.getElementById('tf-amt').value = '';
+  document.getElementById('tf-date').value = todayStr();
+  document.getElementById('tf-note').value = '';
+  openOv('ov-transfer');
+}
+
+function doTransfer() {
+  const fromId = document.getElementById('tf-from').value;
+  const toId   = document.getElementById('tf-to').value;
+  const amt    = parseFloat(document.getElementById('tf-amt').value);
+  const date   = document.getElementById('tf-date').value;
+  const note   = document.getElementById('tf-note').value.trim();
+  if (fromId === toId) return toast('Pilih dompet yang berbeda','err');
+  if (!amt || amt <= 0) return toast('Masukkan nominal yang valid','err');
+  const from = S.wallets.find(x => x.id === fromId);
+  const to   = S.wallets.find(x => x.id === toId);
+  if (!from || !to) return;
+  from.balance -= amt;
+  to.balance   += amt;
+  S.transactions.push({ id:uid(), walletId:fromId, type:'expense', category:'tfr_out', amount:amt, date, note:note||'Transfer ke '+to.name });
+  S.transactions.push({ id:uid(), walletId:toId,   type:'income',  category:'tfr_in',  amount:amt, date, note:note||'Transfer dari '+from.name });
+  save(); closeOv('ov-transfer'); toast('Transfer berhasil ✓');
+  openWallet(_curWallet);
+}
+
+/* ════════════════════════════
+   TAMBAH TRANSAKSI
+════════════════════════════ */
+function setupAddTx() {
+  _txType = 'expense'; _txCat = null;
+  document.getElementById('tx-form-title').textContent = 'Tambah Transaksi';
+  document.getElementById('txf-amt').value = '';
+  document.getElementById('txf-note').value = '';
+  document.getElementById('txf-date').value = todayStr();
+  const wSel = document.getElementById('txf-wallet');
+  wSel.innerHTML = S.wallets.length
+    ? S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('')
+    : '<option value="">– Tambah dompet dulu –</option>';
+  setTxType('expense');
+}
+
+function setTxType(type) {
+  _txType = type; _txCat = null;
+  document.getElementById('tt-inc').className = 'type-btn' + (type==='income' ? ' t-inc' : '');
+  document.getElementById('tt-exp').className = 'type-btn' + (type==='expense'? ' t-exp' : '');
+  const cats = type==='income' ? CAT_IN : CAT_EX;
+  document.getElementById('txf-cats').innerHTML = cats.map(c =>
+    `<button class="cat-btn" id="cb-${c.id}" onclick="pickCat('${c.id}')"><span class="ci">${c.ic}</span>${c.lbl}</button>`
+  ).join('');
+}
+
+function pickCat(id) {
   _txCat = id;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('sel'));
-  const btn = document.getElementById('cb-' + id);
+  const btn = document.getElementById('cb-'+id);
   if (btn) btn.classList.add('sel');
 }
 
 function saveTx() {
-  const amt  = parseFloat(document.getElementById('tx-amount').value);
-  const note = document.getElementById('tx-note').value.trim();
-  const date = document.getElementById('tx-date').value;
-
-  if (!amt || amt <= 0) return toast('Masukkan nominal yang valid', 'err');
-  if (!_txCat)          return toast('Pilih kategori terlebih dahulu', 'err');
-  if (!date)            return toast('Pilih tanggal transaksi', 'err');
-
-  if (_txType === 'expense' && amt > S.balance && !_txWarnShown) {
-    _txWarnShown = true;
-    document.getElementById('tx-warn').style.display = 'block';
-    return;
-  }
-
-  S.transactions.push({ id: uid(), type: _txType, category: _txCat, amount: amt, note, date });
-  S.balance += (_txType === 'income' ? amt : -amt);
-
-  save(); closeModal('modal-tx');
-  toast('Transaksi berhasil disimpan ✓');
-  if (activeTab === 'transaksi') renderTx();
-  renderDashboard();
+  const walId = document.getElementById('txf-wallet').value;
+  const amt   = parseFloat(document.getElementById('txf-amt').value);
+  const date  = document.getElementById('txf-date').value;
+  const note  = document.getElementById('txf-note').value.trim();
+  if (!walId)          return toast('Pilih dompet terlebih dahulu','err');
+  if (!amt || amt<=0)  return toast('Masukkan nominal yang valid','err');
+  if (!_txCat)         return toast('Pilih kategori','err');
+  const w = S.wallets.find(x => x.id === walId);
+  if (!w) return;
+  S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, amount:amt, date, note });
+  w.balance += (_txType==='income' ? amt : -amt);
+  save(); toast('Transaksi disimpan ✓'); goBack(); renderHome();
 }
 
-function deleteTx(id) {
+function delTx(id, e) {
+  e && e.stopPropagation();
   const t = S.transactions.find(x => x.id === id);
   if (!t) return;
-  confirm2('🗑️', 'Hapus Transaksi?',
-    'Transaksi sebesar ' + rp(t.amount) + ' ini akan dihapus dan saldo diperbarui secara otomatis.',
-    'Hapus', 'btn-danger',
-    () => {
-      S.balance += (t.type === 'income' ? -t.amount : t.amount);
-      S.transactions = S.transactions.filter(x => x.id !== id);
-      save(); toast('Transaksi dihapus'); renderTx(); renderDashboard();
-    }
-  );
-}
-
-/* ═══════════════════════════════════
-   HUTANG & PIUTANG
-═══════════════════════════════════ */
-let dpTab = 'hutang', _dpType = 'hutang';
-
-function renderDp() {
-  const active = S.debts.filter(d => !d.paid);
-  document.getElementById('dp-hutang').textContent  = rp(active.filter(d => d.type === 'hutang').reduce((a, d) => a + d.amount, 0));
-  document.getElementById('dp-piutang').textContent = rp(active.filter(d => d.type === 'piutang').reduce((a, d) => a + d.amount, 0));
-
-  let list = [...S.debts];
-  if (dpTab === 'lunas') list = list.filter(d => d.paid);
-  else list = list.filter(d => !d.paid && d.type === dpTab);
-  list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-  const el = document.getElementById('dp-list');
-  if (list.length === 0) {
-    const msgs = {
-      hutang:  ['🎉', 'Tidak Ada Hutang',        'Selamat! Anda tidak memiliki hutang aktif saat ini'],
-      piutang: ['💸', 'Tidak Ada Piutang',        'Belum ada orang yang berhutang kepada Anda'],
-      lunas:   ['✅', 'Belum Ada Catatan Lunas',  'Tandai hutang/piutang yang sudah selesai dilunasi'],
-    };
-    const m = msgs[dpTab];
-    el.innerHTML = '<div class="empty"><div class="ei">' + m[0] + '</div><div class="et">' + m[1] + '</div><div class="es">' + m[2] + '</div></div>';
-    return;
-  }
-
-  el.innerHTML = list.map(d => {
-    const sign = d.type === 'hutang' ? '−' : '+';
-    const actions = d.paid
-      ? '<span style="font-size:12px;color:var(--green)">✓ Lunas pada ' + fmtDate(d.paidDate) + '</span>'
-      : '<button class="btn btn-success btn-sm" onclick="markPaid(\'' + d.id + '\')">✓ Tandai Lunas</button>' +
-        '<button class="btn btn-ghost  btn-sm" onclick="deleteDp(\'' + d.id + '\')">Hapus</button>';
-    const lunasTag = d.paid ? ' <span class="badge badge-lunas">Lunas</span>' : '';
-    return '<div class="list-card">' +
-      '<div class="lc-head">' +
-        '<div>' +
-          '<div class="lc-name">' + esc(d.name) + '</div>' +
-          '<div class="lc-meta">' + (d.note ? esc(d.note) + ' · ' : '') + fmtDate(d.date) + lunasTag + '</div>' +
-        '</div>' +
-        '<div style="text-align:right;flex-shrink:0">' +
-          '<div class="lc-amount ' + d.type + '">' + sign + rp(d.amount) + '</div>' +
-          '<div style="font-size:11px;color:var(--text2);margin-top:3px">' + (d.type === 'hutang' ? 'Hutang Saya' : 'Piutang Saya') + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="lc-actions">' + actions + '</div>' +
-      '</div>';
-  }).join('');
-}
-
-function setDpTab(tab) {
-  dpTab = tab;
-  ['hutang','piutang','lunas'].forEach(t => {
-    document.getElementById('dpTab-' + t).classList.toggle('active', t === tab);
-  });
-  renderDp();
-}
-
-function openDebtModal() {
-  _dpType = 'hutang';
-  ['dp-name','dp-amount','dp-note'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('dp-date').value = todayStr();
-  setDebtType('hutang');
-  openModal('modal-debt');
-}
-
-function setDebtType(type) {
-  _dpType = type;
-  document.getElementById('dpType-hutang').className  = 'segtab-btn' + (type === 'hutang'  ? ' sel-hutang'  : '');
-  document.getElementById('dpType-piutang').className = 'segtab-btn' + (type === 'piutang' ? ' sel-piutang' : '');
-}
-
-function saveDebt() {
-  const name = document.getElementById('dp-name').value.trim();
-  const amt  = parseFloat(document.getElementById('dp-amount').value);
-  const note = document.getElementById('dp-note').value.trim();
-  const date = document.getElementById('dp-date').value;
-
-  if (!name)            return toast('Masukkan nama orang', 'err');
-  if (!amt || amt <= 0) return toast('Masukkan nominal yang valid', 'err');
-
-  S.debts.push({ id: uid(), type: _dpType, name, amount: amt, note, date, paid: false, paidDate: null });
-  save(); closeModal('modal-debt');
-  toast((_dpType === 'hutang' ? 'Hutang' : 'Piutang') + ' berhasil dicatat ✓');
-  renderDp(); renderDashboard();
-}
-
-function markPaid(id) {
-  const d = S.debts.find(x => x.id === id);
-  if (!d) return;
-  const effTxt = d.type === 'hutang'
-    ? 'Saldo Anda akan <strong>berkurang</strong> karena Anda membayar hutang.'
-    : 'Saldo Anda akan <strong>bertambah</strong> karena Anda menerima pembayaran.';
-  confirm2(
-    d.type === 'hutang' ? '🤝' : '💰',
-    'Tandai Lunas?',
-    (d.type === 'hutang' ? 'Hutang' : 'Piutang') + ' ke <strong>' + esc(d.name) + '</strong> sebesar <strong>' + rp(d.amount) + '</strong> akan ditandai lunas.\n\n' + effTxt + '\nTransaksi akan dicatat otomatis.',
-    'Lunas ✓', 'btn-success',
-    () => {
-      d.paid = true; d.paidDate = todayStr();
-      const txType2 = d.type === 'hutang' ? 'expense' : 'income';
-      S.transactions.push({
-        id: uid(), type: txType2,
-        category: txType2 === 'expense' ? 'lain_ex' : 'lain_in',
-        amount: d.amount,
-        note: (d.type === 'hutang' ? 'Bayar hutang ke ' : 'Terima piutang dari ') + d.name,
-        date: todayStr()
-      });
-      S.balance += (txType2 === 'income' ? d.amount : -d.amount);
-      save(); toast('Ditandai lunas! Transaksi dicatat otomatis ✓');
-      renderDp(); renderDashboard();
-    }
-  );
-}
-
-function deleteDp(id) {
-  confirm2('🗑️', 'Hapus Data?', 'Data hutang/piutang ini akan dihapus secara permanen.', 'Hapus', 'btn-danger', () => {
-    S.debts = S.debts.filter(x => x.id !== id);
-    save(); toast('Data dihapus'); renderDp(); renderDashboard();
+  confirm2('🗑️','Hapus Transaksi?','Transaksi ini akan dihapus dan saldo dompet diperbarui.','Hapus','btn-del', () => {
+    const w = S.wallets.find(x => x.id === t.walletId);
+    if (w) w.balance += (t.type==='income' ? -t.amount : t.amount);
+    S.transactions = S.transactions.filter(x => x.id !== id);
+    save(); toast('Transaksi dihapus'); renderHome();
   });
 }
 
-/* ═══════════════════════════════════
-   TAGIHAN
-═══════════════════════════════════ */
-let _billIcon = '⚡';
-
-function renderBills() {
-  const now = new Date();
-  const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni',
-                  'Juli','Agustus','September','Oktober','November','Desember'];
-  document.getElementById('bill-month-lbl').textContent = MONTHS[now.getMonth()] + ' ' + now.getFullYear();
-
-  const mk    = monthKey();
-  const paid  = S.bills.filter(b => b.lastPaid === mk);
-  const unpaid = S.bills.filter(b => b.lastPaid !== mk);
-  document.getElementById('bill-paid-total').textContent   = rp(paid.reduce((a, b) => a + b.amount, 0));
-  document.getElementById('bill-unpaid-total').textContent = rp(unpaid.reduce((a, b) => a + b.amount, 0));
-
-  const el = document.getElementById('bill-list');
-  if (S.bills.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="ei">📋</div>' +
-      '<div class="et">Belum Ada Tagihan</div>' +
-      '<div class="es">Tambahkan tagihan rutin bulanan Anda seperti listrik, internet, dan lainnya</div></div>';
-    return;
-  }
-
-  const today = now.getDate();
-  const sorted = [
-    ...unpaid.sort((a, b) => a.dueDay - b.dueDay),
-    ...paid.sort((a, b) => a.dueDay - b.dueDay)
-  ];
-
-  el.innerHTML = sorted.map(b => {
-    const isPaid   = b.lastPaid === mk;
-    const isOver   = !isPaid && b.dueDay < today;
-    const badge    = isPaid  ? '<span class="badge badge-paid">✓ Lunas</span>'
-                   : isOver  ? '<span class="badge badge-overdue">⚠ Terlambat</span>'
-                             : '<span class="badge badge-unpaid">Belum Bayar</span>';
-    const payBtn   = !isPaid
-      ? '<button class="btn btn-success btn-sm" onclick="payBill(\'' + b.id + '\')">💳 Bayar</button>'
-      : '';
-    return '<div class="list-card">' +
-      '<div class="lc-head">' +
-        '<div style="display:flex;align-items:center;gap:12px">' +
-          '<div style="font-size:32px;flex-shrink:0">' + (b.icon || '📋') + '</div>' +
-          '<div>' +
-            '<div class="lc-name">' + esc(b.name) + '</div>' +
-            '<div class="lc-meta">Jatuh tempo tgl&nbsp;<strong>' + b.dueDay + '</strong> setiap bulan</div>' +
-          '</div>' +
-        '</div>' +
-        '<div style="text-align:right;flex-shrink:0">' +
-          '<div class="lc-amount piutang">' + rp(b.amount) + '</div>' +
-          '<div style="margin-top:5px">' + badge + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="lc-actions">' + payBtn +
-        '<button class="btn btn-ghost btn-sm" onclick="deleteBill(\'' + b.id + '\')">Hapus</button>' +
-      '</div></div>';
-  }).join('');
+/* ════════════════════════════
+   RIWAYAT
+════════════════════════════ */
+function renderHistory() {
+  _histTypeF = 'all'; _histWalF = '';
+  const chips = document.getElementById('hist-chips');
+  chips.innerHTML =
+    `<button class="chip active" onclick="setHistType('all',this)">Semua</button>
+     <button class="chip" onclick="setHistType('income',this)">Pemasukan</button>
+     <button class="chip" onclick="setHistType('expense',this)">Pengeluaran</button>` +
+    S.wallets.map(w =>
+      `<button class="chip" onclick="setHistWal('${w.id}',this)">${esc(w.name)}</button>`
+    ).join('');
+  drawHistList();
 }
 
-function openBillModal() {
-  _billIcon = '⚡';
-  ['bill-name','bill-amount','bill-due-day'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('bill-icon-grid').innerHTML = BILL_ICONS.map(ic =>
-    '<button class="icon-btn' + (ic === _billIcon ? ' sel' : '') + '" onclick="pickBillIcon(\'' + ic + '\',this)">' + ic + '</button>'
+function setHistType(t, el) {
+  _histTypeF = t; _histWalF = '';
+  document.querySelectorAll('#hist-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active'); drawHistList();
+}
+function setHistWal(id, el) {
+  _histWalF = id; _histTypeF = 'all';
+  document.querySelectorAll('#hist-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active'); drawHistList();
+}
+
+function drawHistList() {
+  let list = [...S.transactions];
+  if (_histTypeF==='income')  list = list.filter(t => t.type==='income');
+  if (_histTypeF==='expense') list = list.filter(t => t.type==='expense');
+  if (_histWalF)               list = list.filter(t => t.walletId===_histWalF);
+  list.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  const el = document.getElementById('hist-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">🔍</div><div class="et">Tidak Ada Transaksi</div><div class="es">Tidak ada data sesuai filter</div></div>';
+    return;
+  }
+  const groups = {};
+  list.forEach(t => { (groups[t.date||''] = groups[t.date||''] || []).push(t); });
+  el.innerHTML = Object.keys(groups).sort((a,b) => b.localeCompare(a)).map(date =>
+    `<div class="date-group">${fmtDate(date)}</div>
+     <div style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+       ${groups[date].map(t => {
+         const c = catInfo(t.category);
+         const w = S.wallets.find(x => x.id === t.walletId);
+         const inc = t.type==='income';
+         const bg = inc ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.1)';
+         return `<div class="tx-item">
+           <div class="tx-ico" style="background:${bg}">${c.ic}</div>
+           <div class="tx-info">
+             <div class="tx-name">${esc(t.note||c.lbl)}</div>
+             <div class="tx-meta">${esc(w?.name||'–')} · ${c.lbl}</div>
+           </div>
+           <div class="tx-right">
+             <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+':'-'}${rp(t.amount)}</div>
+             <button class="del-btn" onclick="delTxHist('${t.id}')">×</button>
+           </div>
+         </div>`;
+       }).join('')}
+     </div>`
   ).join('');
-  openModal('modal-bill');
 }
 
-function pickBillIcon(ic, el) {
-  _billIcon = ic;
-  document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('sel'));
-  el.classList.add('sel');
+function delTxHist(id) {
+  const t = S.transactions.find(x => x.id === id);
+  if (!t) return;
+  confirm2('🗑️','Hapus Transaksi?','Transaksi ini akan dihapus dan saldo dompet diperbarui.','Hapus','btn-del', () => {
+    const w = S.wallets.find(x => x.id === t.walletId);
+    if (w) w.balance += (t.type==='income' ? -t.amount : t.amount);
+    S.transactions = S.transactions.filter(x => x.id !== id);
+    save(); toast('Transaksi dihapus'); drawHistList();
+  });
+}
+
+/* ════════════════════════════
+   CATATAN & TAGIHAN
+════════════════════════════ */
+function renderNotes() { drawNotes(); drawBills(); }
+
+function setTab(tab) {
+  _notesTab = tab;
+  document.getElementById('tab-catatan').classList.toggle('active', tab==='catatan');
+  document.getElementById('tab-tagihan').classList.toggle('active', tab==='tagihan');
+  document.getElementById('panel-catatan').style.display = tab==='catatan' ? '' : 'none';
+  document.getElementById('panel-tagihan').style.display = tab==='tagihan' ? '' : 'none';
+}
+
+/* Notes */
+function drawNotes() {
+  const el = document.getElementById('notes-list');
+  const list = [...S.notes].sort((a,b) => (b.createdAt||'').localeCompare(a.createdAt||''));
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">📝</div><div class="et">Belum Ada Catatan</div><div class="es">Tambahkan catatan penting Anda</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(n => `<div class="note-card">
+    <div class="nc-title">${esc(n.title)}</div>
+    ${n.body ? `<div class="nc-body">${esc(n.body)}</div>` : ''}
+    <div class="nc-date">${fmtDate((n.createdAt||'').slice(0,10))}</div>
+    <div class="nc-acts">
+      <button class="btn btn-out btn-sm" onclick="openNoteForm('${n.id}')">Edit</button>
+      <button class="btn btn-del btn-sm" onclick="delNote('${n.id}')">Hapus</button>
+    </div>
+  </div>`).join('');
+}
+
+function openNoteForm(id) {
+  _editNote = id || null;
+  document.getElementById('note-ttl').textContent = id ? 'Edit Catatan' : 'Tambah Catatan';
+  const n = id ? S.notes.find(x => x.id===id) : null;
+  document.getElementById('nf-title').value = n?.title || '';
+  document.getElementById('nf-body').value  = n?.body  || '';
+  openOv('ov-note');
+}
+
+function saveNote() {
+  const title = document.getElementById('nf-title').value.trim();
+  const body  = document.getElementById('nf-body').value.trim();
+  if (!title) return toast('Masukkan judul catatan','err');
+  if (_editNote) {
+    const n = S.notes.find(x => x.id===_editNote);
+    if (n) { n.title=title; n.body=body; }
+  } else {
+    S.notes.push({ id:uid(), title, body, createdAt:new Date().toISOString() });
+  }
+  save(); closeOv('ov-note'); toast('Catatan disimpan ✓'); drawNotes();
+}
+
+function delNote(id) {
+  confirm2('🗑️','Hapus Catatan?','Catatan ini akan dihapus permanen.','Hapus','btn-del', () => {
+    S.notes = S.notes.filter(x => x.id!==id);
+    save(); toast('Catatan dihapus'); drawNotes();
+  });
+}
+
+/* Bills */
+function drawBills() {
+  const el = document.getElementById('bills-list');
+  const list = [...S.bills].sort((a,b) => (a.dueDate||'').localeCompare(b.dueDate||''));
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="ei">📋</div><div class="et">Belum Ada Tagihan</div><div class="es">Tambahkan tagihan rutin Anda</div></div>';
+    return;
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  el.innerHTML = list.map(b => {
+    const due = b.dueDate ? new Date(b.dueDate+'T00:00:00') : null;
+    const isLate = due && !b.paid && due < today;
+    const badge = b.paid
+      ? '<span class="badge paid">✓ Lunas</span>'
+      : isLate
+        ? '<span class="badge late">⚠ Terlambat</span>'
+        : '<span class="badge unpaid">● Belum Lunas</span>';
+    const payBtn = !b.paid
+      ? `<button class="btn btn-ok btn-sm" onclick="toggleBill('${b.id}')">✓ Tandai Lunas</button>`
+      : `<button class="btn btn-out btn-sm" onclick="toggleBill('${b.id}')">Batalkan</button>`;
+    return `<div class="bill-card">
+      <div class="bill-head">
+        <div>
+          <div class="bill-title">${esc(b.title)}</div>
+          <div class="bill-meta">Jatuh tempo: ${fmtDate(b.dueDate)}${isLate?' ⚠️':''}</div>
+          ${b.note ? `<div class="bill-meta">${esc(b.note)}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="bill-amt">${rp(b.amount)}</div>
+          <div style="margin-top:5px">${badge}</div>
+        </div>
+      </div>
+      <div class="bill-acts">
+        ${payBtn}
+        <button class="btn btn-out btn-sm" onclick="openBillForm('${b.id}')">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="delBill('${b.id}')">Hapus</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openBillForm(id) {
+  _editBill = id || null;
+  document.getElementById('bill-ttl').textContent = id ? 'Edit Tagihan' : 'Tambah Tagihan';
+  const b = id ? S.bills.find(x => x.id===id) : null;
+  document.getElementById('bf-title').value = b?.title  || '';
+  document.getElementById('bf-amt').value   = b?.amount || '';
+  document.getElementById('bf-due').value   = b?.dueDate|| '';
+  document.getElementById('bf-note').value  = b?.note   || '';
+  openOv('ov-bill');
 }
 
 function saveBill() {
-  const name = document.getElementById('bill-name').value.trim();
-  const amt  = parseFloat(document.getElementById('bill-amount').value);
-  const due  = parseInt(document.getElementById('bill-due-day').value);
-
-  if (!name)               return toast('Masukkan nama tagihan', 'err');
-  if (!amt || amt <= 0)    return toast('Masukkan nominal yang valid', 'err');
-  if (!due || due < 1 || due > 31) return toast('Tanggal jatuh tempo harus antara 1–31', 'err');
-
-  S.bills.push({ id: uid(), name, icon: _billIcon, amount: amt, dueDay: due, lastPaid: null });
-  save(); closeModal('modal-bill');
-  toast('Tagihan berhasil ditambahkan ✓');
-  renderBills(); renderDashboard();
+  const title   = document.getElementById('bf-title').value.trim();
+  const amount  = parseFloat(document.getElementById('bf-amt').value) || 0;
+  const dueDate = document.getElementById('bf-due').value;
+  const note    = document.getElementById('bf-note').value.trim();
+  if (!title)          return toast('Masukkan judul tagihan','err');
+  if (!amount||amount<=0) return toast('Masukkan nominal yang valid','err');
+  if (_editBill) {
+    const b = S.bills.find(x => x.id===_editBill);
+    if (b) Object.assign(b,{title,amount,dueDate,note});
+  } else {
+    S.bills.push({id:uid(),title,amount,dueDate,note,paid:false});
+  }
+  save(); closeOv('ov-bill'); toast('Tagihan disimpan ✓'); drawBills();
 }
 
-function payBill(id) {
-  const b = S.bills.find(x => x.id === id);
+function toggleBill(id) {
+  const b = S.bills.find(x => x.id===id);
   if (!b) return;
-  const warnTxt = b.amount > S.balance
-    ? '\n\n⚠️ <strong>Saldo tidak mencukupi!</strong> Saldo akan menjadi negatif.'
-    : '';
-  confirm2('💳', 'Bayar Tagihan?',
-    'Bayar <strong>' + esc(b.name) + '</strong> sebesar <strong>' + rp(b.amount) + '</strong>?' + warnTxt + '\n\nSaldo akan berkurang dan transaksi dicatat otomatis.',
-    'Bayar Sekarang', 'btn-success',
-    () => {
-      b.lastPaid = monthKey();
-      S.transactions.push({ id: uid(), type: 'expense', category: 'tagihan_ex', amount: b.amount, note: 'Tagihan: ' + b.name, date: todayStr() });
-      S.balance -= b.amount;
-      save(); toast(b.name + ' berhasil dibayar ✓');
-      renderBills(); renderDashboard();
-    }
-  );
+  b.paid = !b.paid; save();
+  toast(b.paid ? 'Ditandai lunas ✓' : 'Status dibatalkan');
+  drawBills();
 }
 
-function deleteBill(id) {
-  confirm2('🗑️', 'Hapus Tagihan?', 'Tagihan ini akan dihapus dari daftar secara permanen.', 'Hapus', 'btn-danger', () => {
-    S.bills = S.bills.filter(x => x.id !== id);
-    save(); toast('Tagihan dihapus'); renderBills(); renderDashboard();
+function delBill(id) {
+  confirm2('🗑️','Hapus Tagihan?','Tagihan ini akan dihapus permanen.','Hapus','btn-del', () => {
+    S.bills = S.bills.filter(x => x.id!==id);
+    save(); toast('Tagihan dihapus'); drawBills();
   });
 }
 
-/* ═══════════════════════════════════
-   MODAL HELPERS
-═══════════════════════════════════ */
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+/* ════════════════════════════
+   PROFIL
+════════════════════════════ */
+function openProfile() {
+  document.getElementById('pf-name').value = S.profile.name;
+  openOv('ov-profile');
+}
+function saveProfile() {
+  const name = document.getElementById('pf-name').value.trim();
+  if (!name) return toast('Masukkan nama Anda','err');
+  S.profile.name = name; save(); closeOv('ov-profile');
+  document.getElementById('hm-name').textContent = name;
+  toast('Profil diperbarui ✓');
+}
 
-['modal-tx', 'modal-debt', 'modal-bill'].forEach(id => {
+/* ════════════════════════════
+   MODAL & OVERLAY
+════════════════════════════ */
+function openOv(id)  { document.getElementById(id).classList.add('open'); }
+function closeOv(id) { document.getElementById(id).classList.remove('open'); }
+
+['ov-note','ov-bill','ov-transfer','ov-profile'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e) {
-    if (e.target === this) closeModal(id);
+    if (e.target===this) closeOv(id);
   });
 });
 
-/* ═══════════════════════════════════
-   CONFIRM DIALOG
-═══════════════════════════════════ */
-let _dlgCb = null;
-
-function confirm2(icon, title, html, okLbl, okCls, cb) {
-  _dlgCb = cb;
-  document.getElementById('dlg-icon').textContent  = icon;
-  document.getElementById('dlg-title').textContent = title;
-  document.getElementById('dlg-text').innerHTML    = html.replace(/\n/g, '<br>');
-  const ok = document.getElementById('dlg-ok');
-  ok.textContent = okLbl;
-  ok.className   = 'btn ' + okCls;
-  document.getElementById('dlg').classList.add('open');
+/* ════════════════════════════
+   CONFIRM
+════════════════════════════ */
+let _confCb = null;
+function confirm2(ico, ttl, txt, okLbl, okCls, cb) {
+  _confCb = cb;
+  document.getElementById('c-ico').textContent = ico;
+  document.getElementById('c-ttl').textContent = ttl;
+  document.getElementById('c-txt').innerHTML   = String(txt).replace(/\n/g,'<br>');
+  const ok = document.getElementById('c-ok');
+  ok.textContent = okLbl; ok.className = 'btn '+okCls;
+  document.getElementById('conf-ov').classList.add('open');
 }
-function execDlg()  { closeDlg(); if (_dlgCb) { const f = _dlgCb; _dlgCb = null; f(); } }
-function closeDlg() { document.getElementById('dlg').classList.remove('open'); }
+function doConf()    { closeConf(); if(_confCb){ const f=_confCb; _confCb=null; f(); } }
+function closeConf() { document.getElementById('conf-ov').classList.remove('open'); }
 
-/* ═══════════════════════════════════
-   RESET ALL
-═══════════════════════════════════ */
-function confirmReset() {
-  confirm2('⚠️', 'Reset Semua Data?',
-    'Semua transaksi, hutang/piutang, dan tagihan akan dihapus secara permanen.\n\n<strong>Tindakan ini tidak dapat dibatalkan!</strong>',
-    'Reset', 'btn-danger',
-    () => {
-      S = freshState(); save();
-      toast('Semua data berhasil direset', 'info');
-      renderDashboard();
-    }
-  );
-}
-
-/* ═══════════════════════════════════
+/* ════════════════════════════
    TOAST
-═══════════════════════════════════ */
-let _toastTimer = null;
+════════════════════════════ */
+let _tt = null;
 function toast(msg, type) {
-  type = type || 'ok';
-  const icons = { ok: '✓', err: '✕', info: 'ℹ' };
+  type = type||'ok';
+  const icons = {ok:'✓',err:'✕',info:'ℹ'};
   const el = document.getElementById('toast');
-  el.innerHTML = '<span style="font-size:16px">' + (icons[type] || '✓') + '</span><span>' + msg + '</span>';
-  el.className = 'toast show t-' + type;
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.className = 'toast'; }, 3200);
+  el.innerHTML = `<span>${icons[type]||'✓'}</span><span>${msg}</span>`;
+  el.className = 'toast show t'+type;
+  clearTimeout(_tt);
+  _tt = setTimeout(()=>{ el.className='toast'; }, 3000);
 }
 
-/* ═══════════════════════════════════
+/* ════════════════════════════
    INIT
-═══════════════════════════════════ */
-setTxType('income');
-renderDashboard();
+════════════════════════════ */
+setTxType('expense');
+renderHome();
 </script>
 </body>
 </html>
