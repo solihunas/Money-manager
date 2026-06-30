@@ -597,6 +597,7 @@
         <h3>Transaksi Terbaru</h3>
         <button class="see-all-btn" id="see-all-btn" style="display:none" onclick="goTo('sc-history')">Lihat Semua</button>
       </div>
+      <div class="filt-row" id="hm-chips" style="padding:0 18px 10px"></div>
       <div id="hm-tx"></div>
     </div>
     <div class="spacer"></div>
@@ -948,20 +949,20 @@ const W_ICONS_DIGITAL = ['dana','gopay','ovo','shopee','qris','linkaja'];
 const W_ICONS_CRYPTO  = ['btc','eth','bnb','usdt','sol','xrp','ada','doge'];
 
 const W_ICON_DISPLAY = {
-  dana:    '<span style="font-size:9px;font-weight:900;color:#ee6622;font-family:sans-serif;letter-spacing:-.5px">DANA</span>',
-  gopay:   '<span style="font-size:9px;font-weight:900;color:#00aed6;font-family:sans-serif;letter-spacing:-.5px">GoPay</span>',
-  ovo:     '<span style="font-size:9px;font-weight:900;color:#4c3494;font-family:sans-serif">OVO</span>',
-  shopee:  '<span style="font-size:9px;font-weight:900;color:#ee4d2d;font-family:sans-serif;letter-spacing:-.5px">SPay</span>',
-  qris:    '<span style="font-size:9px;font-weight:900;color:#1a0dab;font-family:sans-serif">QRIS</span>',
-  linkaja: '<span style="font-size:8px;font-weight:900;color:#e82529;font-family:sans-serif;letter-spacing:-.3px">LinkAja</span>',
-  btc:     '<span style="font-size:14px;font-weight:900;color:#f7931a">₿</span>',
-  eth:     '<span style="font-size:14px;font-weight:900;color:#627eea">Ξ</span>',
-  bnb:     '<span style="font-size:10px;font-weight:900;color:#f3ba2f;font-family:sans-serif">BNB</span>',
-  usdt:    '<span style="font-size:9px;font-weight:900;color:#26a17b;font-family:sans-serif">USDT</span>',
-  sol:     '<span style="font-size:10px;font-weight:900;color:#9945ff;font-family:sans-serif">SOL</span>',
-  xrp:     '<span style="font-size:10px;font-weight:900;color:#346aa9;font-family:sans-serif">XRP</span>',
-  ada:     '<span style="font-size:10px;font-weight:900;color:#0033ad;font-family:sans-serif">ADA</span>',
-  doge:    '<span style="font-size:10px;font-weight:900;color:#c2a633;font-family:sans-serif">DOGE</span>',
+  dana:    '<span style="font-size:17px;font-weight:900;color:#ee6622;font-family:sans-serif;letter-spacing:-.5px">DANA</span>',
+  gopay:   '<span style="font-size:14px;font-weight:900;color:#00aed6;font-family:sans-serif;letter-spacing:-.3px">GoPay</span>',
+  ovo:     '<span style="font-size:20px;font-weight:900;color:#4c3494;font-family:sans-serif">OVO</span>',
+  shopee:  '<span style="font-size:14px;font-weight:900;color:#ee4d2d;font-family:sans-serif;letter-spacing:-.3px">SPay</span>',
+  qris:    '<span style="font-size:17px;font-weight:900;color:#1a0dab;font-family:sans-serif">QRIS</span>',
+  linkaja: '<span style="font-size:12px;font-weight:900;color:#e82529;font-family:sans-serif;letter-spacing:-.3px">LinkAja</span>',
+  btc:     '<span style="font-size:22px;font-weight:900;color:#f7931a">₿</span>',
+  eth:     '<span style="font-size:22px;font-weight:900;color:#627eea">Ξ</span>',
+  bnb:     '<span style="font-size:16px;font-weight:900;color:#f3ba2f;font-family:sans-serif">BNB</span>',
+  usdt:    '<span style="font-size:14px;font-weight:900;color:#26a17b;font-family:sans-serif">USDT</span>',
+  sol:     '<span style="font-size:16px;font-weight:900;color:#9945ff;font-family:sans-serif">SOL</span>',
+  xrp:     '<span style="font-size:16px;font-weight:900;color:#346aa9;font-family:sans-serif">XRP</span>',
+  ada:     '<span style="font-size:16px;font-weight:900;color:#0033ad;font-family:sans-serif">ADA</span>',
+  doge:    '<span style="font-size:13px;font-weight:900;color:#c2a633;font-family:sans-serif">DOGE</span>',
 };
 
 function iconDisplay(ic) { return W_ICON_DISPLAY[ic] || ic; }
@@ -981,6 +982,7 @@ let _wClr        = '#5856d6';
 let _notesTab    = 'catatan';
 let _histTypeF   = 'all';
 let _histWalF    = '';
+let _homeWalF    = '';
 let _selectedBill = null;
 
 const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history' };
@@ -1092,15 +1094,25 @@ function renderHome() {
     <span>Tambah<br>Dompet</span>
   </div>`;
 
-  // Recent tx
-  const recent = [...S.transactions]
-    .sort((a,b) => {
-      const da = (a.date||'') + (a.time||'');
-      const db = (b.date||'') + (b.time||'');
-      return db.localeCompare(da);
-    }).slice(0,10);
+  // Home filter chips
+  const chips = document.getElementById('hm-chips');
+  chips.innerHTML =
+    `<button class="chip${_homeWalF===''?' active':''}" onclick="setHomeWal('',this)">Semua</button>` +
+    S.wallets.map(w =>
+      `<button class="chip${_homeWalF===w.id?' active':''}" onclick="setHomeWal('${w.id}',this)">${esc(w.name)}</button>`
+    ).join('');
+
+  // Recent tx (filtered by wallet if selected)
+  let txSrc = [...S.transactions];
+  if (_homeWalF) txSrc = txSrc.filter(t => t.walletId === _homeWalF);
+  txSrc.sort((a,b) => {
+    const da = (a.date||'') + (a.time||'');
+    const db = (b.date||'') + (b.time||'');
+    return db.localeCompare(da);
+  });
+  const recent = txSrc.slice(0,10);
   const seeAll = document.getElementById('see-all-btn');
-  seeAll.style.display = S.transactions.length > 10 ? '' : 'none';
+  seeAll.style.display = txSrc.length > 10 ? '' : 'none';
   const txEl = document.getElementById('hm-tx');
   if (!recent.length) {
     txEl.innerHTML = '<div class="empty"><div class="ei">📭</div><div class="et">Belum Ada Transaksi</div><div class="es">Tekan tombol ＋ di bawah untuk mencatat transaksi</div></div>';
@@ -1120,7 +1132,7 @@ function txRow(t) {
     <div class="tx-ico" style="background:${bg}">${c.ic}</div>
     <div class="tx-info">
       <div class="tx-name">${esc(t.note || c.lbl)}</div>
-      <div class="tx-meta">${esc(w?.name||'–')} · ${fmtShort(t.date)}${timeLbl}</div>
+      <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${fmtShort(t.date)}${timeLbl}</div>
     </div>
     <div class="tx-right">
       <div class="tx-amt ${inc?'inc':'exp'}">${h?'••':(inc?'+':'-')+rp(t.amount)}</div>
@@ -1129,6 +1141,29 @@ function txRow(t) {
 }
 
 function toggleHide() { S.hidden = !S.hidden; save(); renderHome(); }
+
+function setHomeWal(id, el) {
+  _homeWalF = id;
+  document.querySelectorAll('#hm-chips .chip').forEach(c => c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  // Re-render only the tx list section without rebuilding whole home
+  let txSrc = [...S.transactions];
+  if (_homeWalF) txSrc = txSrc.filter(t => t.walletId === _homeWalF);
+  txSrc.sort((a,b) => {
+    const da = (a.date||'') + (a.time||'');
+    const db = (b.date||'') + (b.time||'');
+    return db.localeCompare(da);
+  });
+  const recent = txSrc.slice(0,10);
+  const seeAll = document.getElementById('see-all-btn');
+  seeAll.style.display = txSrc.length > 10 ? '' : 'none';
+  const txEl = document.getElementById('hm-tx');
+  if (!recent.length) {
+    txEl.innerHTML = '<div class="empty"><div class="ei">📭</div><div class="et">Belum Ada Transaksi</div><div class="es">Tidak ada transaksi untuk dompet ini</div></div>';
+  } else {
+    txEl.innerHTML = recent.map(t => txRow(t)).join('');
+  }
+}
 
 /* ════════════════════════════
    WALLET FORM
@@ -1226,7 +1261,7 @@ function openWallet(id) {
       <div class="tx-ico" style="background:${bg}">${c.ic}</div>
       <div class="tx-info">
         <div class="tx-name">${esc(t.note||c.lbl)}</div>
-        <div class="tx-meta">${c.lbl} · ${fmtDate(t.date)}${timeLbl}</div>
+        <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${c.lbl}</span> · ${fmtDate(t.date)}${timeLbl}</div>
       </div>
       <div class="tx-right">
         <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+':'-'}${rp(t.amount)}</div>
@@ -1476,7 +1511,7 @@ function drawHistList() {
            <div class="tx-ico" style="background:${bg}">${c.ic}</div>
            <div class="tx-info">
              <div class="tx-name">${esc(t.note||c.lbl)}</div>
-             <div class="tx-meta">${esc(w?.name||'–')} · ${c.lbl}${timeLbl}</div>
+             <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${c.lbl}${timeLbl}</div>
            </div>
            <div class="tx-right">
              <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+':'-'}${rp(t.amount)}</div>
