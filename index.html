@@ -856,7 +856,10 @@
         </div>
         <div class="sc-row sc-sum">
           <span class="sc-lbl">Keuntungan Bisnis</span>
-          <span class="sc-val" id="sc-biz-net">Rp 0</span>
+          <div style="text-align:right">
+            <div class="sc-val" id="sc-biz-net">Rp 0</div>
+            <div style="font-size:11px;font-weight:700;margin-top:2px" id="sc-biz-margin"></div>
+          </div>
         </div>
       </div>
       <div class="sc-card">
@@ -868,10 +871,6 @@
         <div class="sc-row">
           <span class="sc-lbl">Pengeluaran Pribadi</span>
           <span class="sc-val" id="sc-prv-exp" style="color:var(--exp)">Rp 0</span>
-        </div>
-        <div class="sc-row">
-          <span class="sc-lbl">Alihkan ke Investasi</span>
-          <span class="sc-val" id="sc-prv-inv" style="color:var(--text)">Rp 0</span>
         </div>
         <div class="sc-row sc-sum">
           <span class="sc-lbl">Sisa Pribadi</span>
@@ -887,6 +886,10 @@
         <div class="sc-row">
           <span class="sc-lbl">Total Pengeluaran</span>
           <span class="sc-val" id="sc-all-exp" style="color:var(--exp)">Rp 0</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-lbl">Alihkan ke Investasi</span>
+          <span class="sc-val" id="sc-all-inv" style="color:var(--text)">Rp 0</span>
         </div>
         <div class="sc-row sc-sum">
           <span class="sc-lbl">Sisa Saldo</span>
@@ -925,6 +928,18 @@
       <div class="sum-section">
         <div class="sum-sec-ttl">Kategori Pengeluaran Terbesar</div>
         <div id="sum-cats"></div>
+      </div>
+
+      <!-- Top 5 Tanggal -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Top 5 Tanggal Pengeluaran &amp; Pemasukan</div>
+        <div id="sum-top-dates"></div>
+      </div>
+
+      <!-- Analitik -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Analitik</div>
+        <div id="sum-analytics"></div>
       </div>
 
       <!-- Divider ke teks -->
@@ -1217,6 +1232,8 @@ let _homeWalF    = '';
 let _selectedBill = null;
 let _editTxId    = null;
 let _detailTxId  = null;
+let _eqPtsStored = [];
+let _trendBarsStored = [];
 
 const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history', 'sc-notes':'nb-catatan', 'sc-summary':'nb-rangkuman' };
 const NO_NAV = ['sc-wallet-form','sc-wallet-detail','sc-add-tx'];
@@ -2013,13 +2030,17 @@ function _sumData() {
   const prvExp = prvTx.filter(t => t.type === 'expense' && t.category !== 'investasi_ex').reduce((a,t)=>a+t.amount,0);
   const prvNet = prvInc - prvExp - prvInv;
 
-  /* SALDO — all income & expense (excl transfer), investasi_ex IS counted in allExp */
-  const allInc    = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
-  const allExp    = txs.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
-  const sisaSaldo = allInc - allExp;
-  const saldo     = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
+  /* SALDO — all income & expense (excl transfer) */
+  const allInc      = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
+  const allExp      = txs.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+  const allInv      = txs.filter(t => t.type === 'expense' && t.category === 'investasi_ex').reduce((a,t)=>a+t.amount,0);
+  const allExpNoInv = allExp - allInv;
+  const sisaSaldo   = allInc - allExp;
+  const saldo       = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
 
-  /* Weekly trend — last 8 periods */
+  const bizMargin = bizInc > 0 ? (bizNet / bizInc * 100) : null;
+
+  /* Weekly trend — last 8 periods (with per-segment breakdown) */
   const weeks = [];
   const now = new Date();
   for (let i = 7; i >= 0; i--) {
@@ -2027,8 +2048,37 @@ function _sumData() {
     const start = new Date(end); start.setDate(end.getDate() - 6);   start.setHours(0,0,0);
     const wt    = txs.filter(t => { if (!t.date) return false; const d = new Date(t.date+'T12:00:00'); return d >= start && d <= end; });
     const lbl   = (start.getDate())+'/'+(start.getMonth()+1);
-    weeks.push({ lbl, inc: wt.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp: wt.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0) });
+    const bizWk = wt.filter(t => t.tipe === 'bisnis');
+    const prvWk = wt.filter(t => t.tipe === 'pribadi' || !t.tipe);
+    weeks.push({
+      lbl,
+      inc:    wt.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),
+      exp:    wt.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0),
+      bizInc: bizWk.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0),
+      prvExp: prvWk.filter(t=>t.type==='expense'&&t.category!=='investasi_ex').reduce((a,t)=>a+t.amount,0),
+    });
   }
+
+  /* Analytics */
+  const txDates = txs.filter(t=>t.date).map(t=>t.date).sort();
+  const numDays = txDates.length >= 2
+    ? Math.max(1, Math.round((new Date(txDates[txDates.length-1]) - new Date(txDates[0])) / 86400000) + 1)
+    : 1;
+  const avgDailyInc     = txDates.length ? allInc / numDays : 0;
+  const avgWeeklyBizInc = weeks.reduce((a,w)=>a+w.bizInc,0) / weeks.length;
+  const thisWkBizInc    = weeks[weeks.length-1]?.bizInc || 0;
+  const avgWeeklyPrvExp = weeks.reduce((a,w)=>a+w.prvExp,0) / weeks.length;
+  const thisWkPrvExp    = weeks[weeks.length-1]?.prvExp || 0;
+
+  /* Top 5 dates by amount */
+  const dateExpMap = {}, dateIncMap = {};
+  txs.forEach(t => {
+    if (!t.date) return;
+    if (t.type === 'expense') dateExpMap[t.date] = (dateExpMap[t.date] || 0) + t.amount;
+    if (t.type === 'income')  dateIncMap[t.date] = (dateIncMap[t.date] || 0) + t.amount;
+  });
+  const topExpDates = Object.entries(dateExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([date,amt])=>({date,amt}));
+  const topIncDates = Object.entries(dateIncMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([date,amt])=>({date,amt}));
 
   /* Category breakdown (expenses only, non-transfer) */
   const catMap = {};
@@ -2040,7 +2090,7 @@ function _sumData() {
     .sort((a,b) => b.amt - a.amt)
     .slice(0, 7);
 
-  return { bizInc, bizExp, bizNet, prvInc, prvExp, prvInv, prvNet, allInc, allExp, sisaSaldo, saldo, weeks, cats };
+  return { bizInc, bizExp, bizNet, bizMargin, prvInc, prvExp, prvInv, prvNet, allInc, allExp, allInv, allExpNoInv, sisaSaldo, saldo, weeks, cats, avgDailyInc, avgWeeklyBizInc, thisWkBizInc, avgWeeklyPrvExp, thisWkPrvExp, topExpDates, topIncDates };
 }
 
 /* ════════════════════════════
@@ -2058,16 +2108,25 @@ function renderSummary() {
   const bizNetEl = document.getElementById('sc-biz-net');
   bizNetEl.textContent = (d.bizNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.bizNet));
   bizNetEl.style.color = d.bizNet >= 0 ? 'var(--inc)' : 'var(--exp)';
+  const bizMarginEl = document.getElementById('sc-biz-margin');
+  if (bizMarginEl) {
+    if (d.bizMargin !== null) {
+      bizMarginEl.textContent = '(' + (d.bizMargin >= 0 ? '+' : '') + d.bizMargin.toFixed(1) + '% margin)';
+      bizMarginEl.style.color = d.bizMargin >= 0 ? 'var(--inc)' : 'var(--exp)';
+    } else {
+      bizMarginEl.textContent = '';
+    }
+  }
 
   document.getElementById('sc-prv-inc').textContent = '+ ' + rp(d.prvInc);
   document.getElementById('sc-prv-exp').textContent = '- ' + rp(d.prvExp);
-  document.getElementById('sc-prv-inv').textContent = rp(d.prvInv);
   const prvNetEl = document.getElementById('sc-prv-net');
   prvNetEl.textContent = (d.prvNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.prvNet));
   prvNetEl.style.color = d.prvNet >= 0 ? 'var(--inc)' : 'var(--exp)';
 
   document.getElementById('sc-all-inc').textContent = '+ ' + rp(d.allInc);
-  document.getElementById('sc-all-exp').textContent = '- ' + rp(d.allExp);
+  document.getElementById('sc-all-exp').textContent = '- ' + rp(d.allExpNoInv);
+  document.getElementById('sc-all-inv').textContent = rp(d.allInv);
   const allNetEl = document.getElementById('sc-all-net');
   allNetEl.textContent = (d.sisaSaldo >= 0 ? '+ ' : '- ') + rp(Math.abs(d.sisaSaldo));
   allNetEl.style.color = d.sisaSaldo >= 0 ? 'var(--inc)' : 'var(--exp)';
@@ -2096,8 +2155,68 @@ function renderSummary() {
       </div>`).join('')
     : '<div style="font-size:13px;color:var(--text3)">Belum ada pengeluaran.</div>';
 
+  /* Top 5 dates */
+  const topDatesEl = document.getElementById('sum-top-dates');
+  if (topDatesEl) {
+    const makeRows = (items, col) => items.length
+      ? items.map((it,i) => `<div class="sc-row"><span class="sc-lbl">${i+1}. ${fmtDate(it.date)}</span><span class="sc-val" style="color:${col}">${rp(it.amt)}</span></div>`).join('')
+      : '<div style="font-size:13px;color:var(--text3);padding:6px 0">–</div>';
+    topDatesEl.innerHTML =
+      `<div style="font-size:11px;font-weight:800;color:var(--exp);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">▼ Pengeluaran</div>` +
+      makeRows(d.topExpDates, 'var(--exp)') +
+      `<div style="font-size:11px;font-weight:800;color:var(--inc);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 2px">▲ Pemasukan</div>` +
+      makeRows(d.topIncDates, 'var(--inc)');
+  }
+
+  /* Analytics */
+  const analyticsEl = document.getElementById('sum-analytics');
+  if (analyticsEl) {
+    const bizDelta = d.avgWeeklyBizInc > 0 ? (d.thisWkBizInc - d.avgWeeklyBizInc) / d.avgWeeklyBizInc * 100 : 0;
+    const prvDelta = d.avgWeeklyPrvExp > 0 ? (d.thisWkPrvExp - d.avgWeeklyPrvExp) / d.avgWeeklyPrvExp * 100 : 0;
+    const expRatio = d.allInc > 0 ? d.allExp / d.allInc * 100 : 0;
+    const bizDeltaStr = (bizDelta >= 0 ? '+' : '') + bizDelta.toFixed(0) + '%';
+    const prvDeltaStr = (prvDelta >= 0 ? '+' : '') + prvDelta.toFixed(0) + '%';
+    analyticsEl.innerHTML =
+      `<div class="sc-row"><span class="sc-lbl">Rata-rata Pendapatan/Hari</span><span class="sc-val" style="color:var(--inc)">${rp(d.avgDailyInc)}</span></div>` +
+      `<div class="sc-row"><span class="sc-lbl" style="color:var(--inc)">Bisnis Mingguan (rata-rata)</span><span class="sc-val" style="color:var(--inc)">${rp(d.avgWeeklyBizInc)}</span></div>` +
+      `<div class="sc-row"><span class="sc-lbl" style="color:var(--inc)">Bisnis Minggu Ini</span><span class="sc-val" style="color:${bizDelta>=0?'var(--inc)':'var(--exp)'}">${rp(d.thisWkBizInc)} <span style="font-size:11px">(${bizDeltaStr})</span></span></div>` +
+      `<div class="sc-row"><span class="sc-lbl" style="color:var(--exp)">Pribadi Mingguan (rata-rata)</span><span class="sc-val" style="color:var(--exp)">${rp(d.avgWeeklyPrvExp)}</span></div>` +
+      `<div class="sc-row"><span class="sc-lbl" style="color:var(--exp)">Pengeluaran Pribadi Minggu Ini</span><span class="sc-val" style="color:${prvDelta<=0?'var(--inc)':'var(--exp)'}">${rp(d.thisWkPrvExp)} <span style="font-size:11px">(${prvDeltaStr})</span></span></div>` +
+      `<div class="sc-row"><span class="sc-lbl">Rasio Pengeluaran</span><span class="sc-val" style="color:${expRatio>80?'var(--exp)':expRatio>60?'var(--yellow)':'var(--text)'}">${expRatio.toFixed(1)}%</span></div>`;
+  }
+
   /* Text summary */
   document.getElementById('summary-content').textContent = generateSummary(d);
+}
+
+function _registerCanvasClick(canvas, handler) {
+  if (canvas._clickHandler) canvas.removeEventListener('click', canvas._clickHandler);
+  canvas._clickHandler = function(e) {
+    const rect = canvas.getBoundingClientRect();
+    handler(e.clientX - rect.left, e.clientY - rect.top);
+  };
+  canvas.addEventListener('click', canvas._clickHandler);
+}
+
+function _showChartTooltip(canvas, x, y, text) {
+  let tip = document.getElementById('_chart-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = '_chart-tip';
+    tip.style.cssText = 'position:fixed;z-index:9999;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--text);pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.18);white-space:pre;transition:opacity .2s;display:none;';
+    document.body.appendChild(tip);
+  }
+  tip.textContent = text;
+  tip.style.display = 'block';
+  tip.style.opacity = '1';
+  const rect = canvas.getBoundingClientRect();
+  let tx = Math.max(8, Math.min(window.innerWidth - 180, rect.left + x - 80));
+  let ty = rect.top + y - 56;
+  if (ty < 8) ty = rect.top + y + 10;
+  tip.style.left = tx + 'px';
+  tip.style.top = ty + 'px';
+  clearTimeout(tip._t);
+  tip._t = setTimeout(() => { tip.style.opacity = '0'; setTimeout(() => { tip.style.display = 'none'; }, 220); }, 2500);
 }
 
 function _drawTrend(weeks) {
@@ -2172,6 +2291,17 @@ function _drawTrend(weeks) {
   leg.innerHTML =
     `<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:8px;border-radius:2px;background:${cInc}cc"></div><span style="font-size:11px;font-weight:700;color:var(--text2)">Pemasukan</span></div>` +
     `<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:8px;border-radius:2px;background:${cExp}cc"></div><span style="font-size:11px;font-weight:700;color:var(--text2)">Pengeluaran</span></div>`;
+
+  /* Store bar positions and register click */
+  _trendBarsStored = vis.map((w, i) => ({ ...w, cx: padL + i * cW + cW / 2, bW }));
+  _registerCanvasClick(canvas, (cx) => {
+    if (!_trendBarsStored.length) return;
+    let nearest = _trendBarsStored[0], minD = Infinity;
+    _trendBarsStored.forEach(b => { const d = Math.abs(b.cx - cx); if (d < minD) { minD = d; nearest = b; } });
+    const incStr = '+ ' + rp(nearest.inc);
+    const expStr = '- ' + rp(nearest.exp);
+    _showChartTooltip(canvas, nearest.cx, padT + cH / 2, nearest.lbl + '\n' + incStr + '\n' + expStr);
+  });
 }
 
 /* ════════════════════════════
@@ -2262,9 +2392,9 @@ function _drawEquityCurve(pts) {
   const athX = xs[athIdx], athY = ys[athIdx];
   ctx.beginPath(); ctx.arc(athX, athY, 5, 0, Math.PI*2);
   ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
-  ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = '#f59e0b'; ctx.textAlign = 'center';
-  const athLblY = Math.max(athY - 10, padT + 10);
-  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), athLblY);
+  const cTextMain = cs.getPropertyValue('--text').trim() || '#1a1a2e';
+  ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = cTextMain; ctx.textAlign = 'center';
+  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), padT + 12);
 
   /* Neon runner at last point */
   const rx = xs[n-1], ry = ys[n-1];
@@ -2283,6 +2413,15 @@ function _drawEquityCurve(pts) {
   if (pts[0].date) ctx.fillText(fmtShort(pts[0].date), xs[0], padT + cH + 14);
   ctx.textAlign = 'right';
   if (pts[n-1].date) ctx.fillText(fmtShort(pts[n-1].date), xs[n-1], padT + cH + 14);
+
+  /* Store points and register click */
+  _eqPtsStored = pts.map((p, i) => ({ x: xs[i], y: ys[i], date: p.date, bal: p.bal }));
+  _registerCanvasClick(canvas, (cx) => {
+    if (!_eqPtsStored.length) return;
+    let nearest = _eqPtsStored[0], minD = Infinity;
+    _eqPtsStored.forEach(p => { const d = Math.abs(p.x - cx); if (d < minD) { minD = d; nearest = p; } });
+    _showChartTooltip(canvas, nearest.x, nearest.y, fmtDate(nearest.date) + '\n' + rp(nearest.bal));
+  });
 }
 
 /* ════════════════════════════
