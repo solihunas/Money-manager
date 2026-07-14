@@ -312,6 +312,8 @@
     }
     .type-btn.t-inc { border-color:var(--green); background:var(--green-lt); color:var(--green); }
     .type-btn.t-exp { border-color:var(--red); background:var(--red-lt); color:var(--red); }
+    .type-btn.t-biz { border-color:#f59e0b; background:#fef3c7; color:#92400e; }
+    .type-btn.t-prv { border-color:var(--primary); background:var(--pri-lt); color:var(--primary); }
 
     /* Category grid */
     .cat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
@@ -526,6 +528,44 @@
     .toast.terr { background:var(--red-lt);   color:var(--red); }
     .toast.tinf { background:var(--pri-lt);   color:var(--primary); }
 
+    /* ══════════════════════════
+       RANGKUMAN / SUMMARY
+    ══════════════════════════ */
+    .sum-wrap { padding:12px 16px 0; }
+    .sum-big-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+    .sum-big-card {
+      border-radius:16px; padding:14px 14px 12px;
+      background:var(--card); box-shadow:var(--sh);
+    }
+    .sbc-label { font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+    .sbc-amt { font-size:17px; font-weight:900; line-height:1.2; }
+    .sbc-amt.pos { color:var(--green); }
+    .sbc-amt.neg { color:var(--red); }
+    .sbc-amt.prv { color:var(--primary); }
+    .sbc-sub { font-size:10px; color:var(--text3); margin-top:4px; }
+    .sum-mini-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+    .sum-mini { background:var(--card); border-radius:12px; padding:10px 10px; box-shadow:var(--sh); text-align:center; }
+    .smi-lbl { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
+    .smi-val { font-size:12px; font-weight:900; color:var(--text); }
+    .smi-val.inc { color:var(--inc); }
+    .smi-val.exp { color:var(--exp); }
+    .sum-section { background:var(--card); border-radius:16px; padding:14px 14px 12px; box-shadow:var(--sh); margin-bottom:10px; }
+    .sum-sec-ttl { font-size:13px; font-weight:800; color:var(--text); margin-bottom:12px; }
+    .sum-chart-canvas { width:100%; display:block; border-radius:8px; }
+    .sum-bvp-bar { height:22px; border-radius:6px; overflow:hidden; display:flex; margin-bottom:8px; }
+    .sum-bvp-seg { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white; transition:width .4s; }
+    .sum-bvp-leg { display:flex; gap:16px; }
+    .sum-bvp-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+    .sum-cat-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .sum-cat-lbl { font-size:12px; font-weight:700; color:var(--text); min-width:0; flex:0 0 110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sum-cat-bar-wrap { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+    .sum-cat-bar { height:100%; border-radius:4px; background:var(--exp); }
+    .sum-cat-amt { font-size:11px; font-weight:800; color:var(--exp); flex-shrink:0; min-width:72px; text-align:right; }
+    .sum-divider { display:flex; align-items:center; gap:10px; margin:16px 0 8px; }
+    .sum-divider::before,.sum-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .sum-divider span { font-size:11px; font-weight:700; color:var(--text3); white-space:nowrap; }
+    .sum-text-box { background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);font-family:'Courier New',monospace;font-size:11px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7;max-height:280px;overflow-y:auto; }
+
     /* ── Misc ── */
     .spacer { height:16px; }
     .date-group { padding:10px 18px 4px; font-size:12px; font-weight:700; color:var(--text2); }
@@ -728,6 +768,14 @@
         <label class="fl">Kategori</label>
         <div class="cat-grid" id="txf-cats"></div>
       </div>
+      <!-- Bisnis / Pribadi toggle -->
+      <div class="fg" id="txf-tipe-wrap">
+        <label class="fl">Label</label>
+        <div class="type-row" style="margin-bottom:0">
+          <button class="type-btn t-prv" id="tt-prv" onclick="setTxTipe('pribadi')">👤 Pribadi</button>
+          <button class="type-btn" id="tt-biz" onclick="setTxTipe('bisnis')">💼 Bisnis</button>
+        </div>
+      </div>
       <!-- Bill picker (shown when expense + tagihan) -->
       <div id="txf-bill-section" style="display:none">
         <div class="fg">
@@ -787,11 +835,70 @@
     <div class="nb-head">
       <h2>Rangkuman</h2>
     </div>
-    <div style="padding:12px 16px 6px;display:flex;gap:8px;align-items:center">
-      <p style="font-size:12px;color:var(--text2);flex:1">Semua transaksi terformat, siap salin &amp; kirim ke AI.</p>
-      <button class="btn btn-pri btn-sm" style="width:auto;flex-shrink:0" onclick="copySummary()">📋 Salin</button>
+    <div class="sum-wrap">
+      <!-- Bagian A: Statistik -->
+      <div class="sum-big-row">
+        <div class="sum-big-card">
+          <div class="sbc-label">Keuntungan Bisnis</div>
+          <div class="sbc-amt" id="sum-biz-net">Rp 0</div>
+          <div class="sbc-sub">Masuk − Keluar Bisnis</div>
+        </div>
+        <div class="sum-big-card">
+          <div class="sbc-label">Pengeluaran Pribadi</div>
+          <div class="sbc-amt prv" id="sum-prv-exp">Rp 0</div>
+          <div class="sbc-sub">Total keluar (Pribadi)</div>
+        </div>
+      </div>
+      <div class="sum-mini-row">
+        <div class="sum-mini">
+          <div class="smi-lbl">Saldo</div>
+          <div class="smi-val" id="sum-saldo">Rp 0</div>
+        </div>
+        <div class="sum-mini">
+          <div class="smi-lbl">Total Masuk</div>
+          <div class="smi-val inc" id="sum-tot-inc">Rp 0</div>
+        </div>
+        <div class="sum-mini">
+          <div class="smi-lbl">Total Keluar</div>
+          <div class="smi-val exp" id="sum-tot-exp">Rp 0</div>
+        </div>
+      </div>
+
+      <!-- Tren Cash Flow -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Tren Cash Flow</div>
+        <canvas id="chart-trend" class="sum-chart-canvas" height="160"></canvas>
+        <div id="chart-trend-legend" style="display:flex;gap:16px;margin-top:8px;justify-content:center"></div>
+      </div>
+
+      <!-- Bisnis vs Pribadi -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Bisnis vs Pribadi <span style="font-size:11px;font-weight:600;color:var(--text3)">(pengeluaran)</span></div>
+        <div class="sum-bvp-bar" id="sum-bvp-bar">
+          <div class="sum-bvp-seg" id="sum-bvp-biz" style="width:50%;background:#f59e0b">Bisnis</div>
+          <div class="sum-bvp-seg" id="sum-bvp-prv" style="width:50%;background:var(--primary)">Pribadi</div>
+        </div>
+        <div class="sum-bvp-leg">
+          <div style="display:flex;align-items:center;gap:6px"><div class="sum-bvp-dot" style="background:#f59e0b"></div><span style="font-size:12px;font-weight:700" id="sum-bvp-biz-pct">Bisnis 0%</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div class="sum-bvp-dot" style="background:var(--primary)"></div><span style="font-size:12px;font-weight:700" id="sum-bvp-prv-pct">Pribadi 0%</span></div>
+        </div>
+        <div id="sum-bvp-detail" style="margin-top:10px;font-size:12px;color:var(--text2)"></div>
+      </div>
+
+      <!-- Breakdown Kategori -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Kategori Pengeluaran Terbesar</div>
+        <div id="sum-cats"></div>
+      </div>
+
+      <!-- Divider ke teks -->
+      <div class="sum-divider"><span>📋 Teks Rangkuman</span></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <p style="font-size:12px;color:var(--text2);flex:1">Siap salin &amp; kirim ke AI untuk analisis mendalam.</p>
+        <button class="btn btn-pri btn-sm" style="width:auto;flex-shrink:0" onclick="copySummary()">📋 Salin</button>
+      </div>
+      <div class="sum-text-box" id="summary-content"></div>
     </div>
-    <div id="summary-content" style="margin:0 16px 16px;background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);font-family:'Courier New',monospace;font-size:11.5px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7;max-height:calc(100vh - 200px);overflow-y:auto"></div>
     <div class="spacer"></div>
   </div>
 
@@ -987,29 +1094,25 @@ const SVG_EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 
 /* ─── Categories ─── */
 const CAT_IN = [
-  {id:'gaji',     ic:'💼', lbl:'Gaji'},
-  {id:'freelance',ic:'💻', lbl:'Freelance'},
-  {id:'penjualan',ic:'🏷️', lbl:'Penjualan'},
-  {id:'investasi',ic:'📈', lbl:'Investasi'},
-  {id:'bonus',    ic:'🎁', lbl:'Bonus'},
-  {id:'bisnis',   ic:'🏪', lbl:'Bisnis'},
-  {id:'hutang_in',ic:'🤝', lbl:'Hutang'},
-  {id:'tfr_in',   ic:'💸', lbl:'Transfer Masuk'},
-  {id:'lain_in',  ic:'💰', lbl:'Lainnya'},
+  {id:'penjualan', ic:'🏷️', lbl:'Penjualan'},
+  {id:'gaji',      ic:'💼', lbl:'Gaji'},
+  {id:'freelance', ic:'💻', lbl:'Freelance'},
+  {id:'bonus',     ic:'🎁', lbl:'Bonus'},
+  {id:'investasi', ic:'📈', lbl:'Investasi'},
+  {id:'hutang_in', ic:'🤝', lbl:'Hutang'},
+  {id:'tfr_in',    ic:'💸', lbl:'Transfer Masuk'},
+  {id:'lain_in',   ic:'💰', lbl:'Lainnya'},
 ];
 const CAT_EX = [
-  {id:'makan',     ic:'🍜', lbl:'Makan'},
-  {id:'transport', ic:'🚗', lbl:'Transport'},
-  {id:'belanja',   ic:'🛒', lbl:'Belanja'},
-  {id:'kesehatan', ic:'🏥', lbl:'Kesehatan'},
-  {id:'hiburan',   ic:'🎬', lbl:'Hiburan'},
-  {id:'pendidikan',ic:'📚', lbl:'Pendidikan'},
-  {id:'rumah',     ic:'🏠', lbl:'Rumah'},
-  {id:'tagihan',   ic:'⚡', lbl:'Tagihan'},
-  {id:'pakaian',   ic:'👗', lbl:'Pakaian'},
-  {id:'sosial',    ic:'🤝', lbl:'Sosial'},
-  {id:'tfr_out',   ic:'↗️', lbl:'Transfer'},
-  {id:'lain_ex',   ic:'💸', lbl:'Lainnya'},
+  {id:'operasional', ic:'🖥️', lbl:'Operasional Bisnis'},
+  {id:'kebutuhan',   ic:'🛍️', lbl:'Kebutuhan Pribadi'},
+  {id:'keluarga',    ic:'👨‍👩‍👧', lbl:'Keluarga'},
+  {id:'utilitas',    ic:'🔌', lbl:'Utilitas'},
+  {id:'kesehatan',   ic:'🏥', lbl:'Kesehatan'},
+  {id:'tarik_tunai', ic:'💵', lbl:'Tarik Tunai'},
+  {id:'tagihan',     ic:'⚡', lbl:'Tagihan'},
+  {id:'tfr_out',     ic:'↗️', lbl:'Transfer'},
+  {id:'lain_ex',     ic:'💸', lbl:'Lainnya'},
 ];
 const ALL_CATS = [...CAT_IN, ...CAT_EX];
 function catInfo(id) { return ALL_CATS.find(c=>c.id===id) || {ic:'💰',lbl:id||'Lainnya'}; }
@@ -1048,6 +1151,7 @@ let _editNote    = null;
 let _editBill    = null;
 let _txType      = 'expense';
 let _txCat       = null;
+let _txTipe      = 'pribadi';
 let _wIco        = '👛';
 let _wClr        = '#5856d6';
 let _histTypeF   = 'all';
@@ -1180,6 +1284,12 @@ function renderHome() {
   }
 }
 
+function tipeBadge(t) {
+  if (!t.tipe || t.tipe === 'transfer') return '';
+  const isBiz = t.tipe === 'bisnis';
+  return `<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;background:${isBiz?'#fef3c7':'var(--pri-lt)'};color:${isBiz?'#92400e':'var(--primary)'}">${isBiz?'Bisnis':'Pribadi'}</span>`;
+}
+
 function txRow(t) {
   const c   = catInfo(t.category);
   const w   = S.wallets.find(x => x.id === t.walletId);
@@ -1190,7 +1300,7 @@ function txRow(t) {
   return `<div class="tx-item">
     <div class="tx-ico" style="background:${bg}">${c.ic}</div>
     <div class="tx-info">
-      <div class="tx-name">${esc(t.note || c.lbl)}</div>
+      <div class="tx-name">${esc(t.note || c.lbl)}${tipeBadge(t)}</div>
       <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${fmtShort(t.date)}${timeLbl}</div>
     </div>
     <div class="tx-right">
@@ -1391,8 +1501,8 @@ function doTransfer() {
   const time = nowTime();
   from.balance -= amt;
   to.balance   += amt;
-  S.transactions.push({ id:uid(), walletId:fromId, type:'expense', category:'tfr_out', amount:amt, date, time, note:note||'Transfer ke '+to.name });
-  S.transactions.push({ id:uid(), walletId:toId,   type:'income',  category:'tfr_in',  amount:amt, date, time, note:note||'Transfer dari '+from.name });
+  S.transactions.push({ id:uid(), walletId:fromId, type:'expense', category:'tfr_out', tipe:'transfer', amount:amt, date, time, note:note||'Transfer ke '+to.name });
+  S.transactions.push({ id:uid(), walletId:toId,   type:'income',  category:'tfr_in',  tipe:'transfer', amount:amt, date, time, note:note||'Transfer dari '+from.name });
   save(); closeOv('ov-transfer'); toast('Transfer berhasil ✓');
   openWallet(_curWallet);
 }
@@ -1401,7 +1511,7 @@ function doTransfer() {
    TAMBAH TRANSAKSI
 ════════════════════════════ */
 function setupAddTx() {
-  _txType = 'expense'; _txCat = null; _selectedBill = null;
+  _txType = 'expense'; _txCat = null; _selectedBill = null; _txTipe = 'pribadi';
   document.getElementById('tx-form-title').textContent = 'Tambah Transaksi';
   document.getElementById('txf-amt').value  = '';
   document.getElementById('txf-note').value = '';
@@ -1412,6 +1522,7 @@ function setupAddTx() {
     ? S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('')
     : '<option value="">– Tambah dompet dulu –</option>';
   setTxType('expense');
+  setTxTipe('pribadi');
 }
 
 function setTxType(type) {
@@ -1425,11 +1536,24 @@ function setTxType(type) {
   ).join('');
 }
 
+const _BISNIS_CATS = new Set(['penjualan','freelance','operasional','investasi','bisnis']);
+
+function setTxTipe(tipe) {
+  _txTipe = tipe;
+  document.getElementById('tt-prv').className = 'type-btn' + (tipe==='pribadi' ? ' t-prv' : '');
+  document.getElementById('tt-biz').className = 'type-btn' + (tipe==='bisnis'  ? ' t-biz' : '');
+}
+
 function pickCat(id) {
   _txCat = id;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('sel'));
   const btn = document.getElementById('cb-'+id);
   if (btn) btn.classList.add('sel');
+
+  // Auto-detect bisnis/pribadi from category
+  if (id !== 'tfr_in' && id !== 'tfr_out') {
+    setTxTipe(_BISNIS_CATS.has(id) ? 'bisnis' : 'pribadi');
+  }
 
   // Hutang (income) → redirect to Tagihan
   if (id === 'hutang_in' && _txType === 'income') {
@@ -1491,7 +1615,8 @@ function saveTx() {
   const w = S.wallets.find(x => x.id === walId);
   if (!w) return;
   const time = nowTime();
-  S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, amount:amt, date, time, note });
+  const tipe = (_txCat === 'tfr_in' || _txCat === 'tfr_out') ? 'transfer' : (_txTipe || 'pribadi');
+  S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, tipe, amount:amt, date, time, note });
   w.balance += (_txType==='income' ? amt : -amt);
   // Auto-mark selected bill as paid
   if (_selectedBill && _txType==='expense') {
@@ -1731,82 +1856,233 @@ function delBill(id) {
 }
 
 /* ════════════════════════════
-   RANGKUMAN
+   RANGKUMAN — data helpers
 ════════════════════════════ */
-function renderSummary() {
-  document.getElementById('summary-content').textContent = generateSummary();
+function _sumData() {
+  /* Exclude pure transfer transactions from all stats */
+  const txs = S.transactions.filter(t => t.tipe !== 'transfer' && t.category !== 'tfr_in' && t.category !== 'tfr_out');
+
+  const bizTx  = txs.filter(t => t.tipe === 'bisnis');
+  const bizInc = bizTx.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
+  const bizExp = bizTx.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+  const bizNet = bizInc - bizExp;
+
+  const prvTx  = txs.filter(t => t.tipe === 'pribadi' || !t.tipe);
+  const prvExp = prvTx.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+
+  const allInc = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
+  const allExp = txs.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+  const saldo  = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
+
+  /* Weekly trend — last 8 periods */
+  const weeks = [];
+  const now = new Date();
+  for (let i = 7; i >= 0; i--) {
+    const end   = new Date(now); end.setDate(now.getDate() - i * 7); end.setHours(23,59,59);
+    const start = new Date(end); start.setDate(end.getDate() - 6);   start.setHours(0,0,0);
+    const wt    = txs.filter(t => { if (!t.date) return false; const d = new Date(t.date+'T12:00:00'); return d >= start && d <= end; });
+    const lbl   = (start.getDate())+'/'+(start.getMonth()+1);
+    weeks.push({ lbl, inc: wt.filter(t=>t.type==='income').reduce((a,t)=>a+t.amount,0), exp: wt.filter(t=>t.type==='expense').reduce((a,t)=>a+t.amount,0) });
+  }
+
+  /* Category breakdown (expenses only, non-transfer) */
+  const catMap = {};
+  txs.filter(t => t.type === 'expense').forEach(t => {
+    catMap[t.category] = (catMap[t.category] || 0) + t.amount;
+  });
+  const cats = Object.entries(catMap)
+    .map(([id, amt]) => ({ ...catInfo(id), amt }))
+    .sort((a,b) => b.amt - a.amt)
+    .slice(0, 7);
+
+  return { bizNet, bizInc, bizExp, prvExp, allInc, allExp, saldo, weeks, cats };
 }
 
-function generateSummary() {
-  const now = new Date();
-  const MON = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-  const dateStr = now.getDate() + ' ' + MON[now.getMonth()] + ' ' + now.getFullYear() + ' ' +
-    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+/* ════════════════════════════
+   RANGKUMAN — render
+════════════════════════════ */
+function renderSummary() {
+  const d = _sumData();
 
-  const lines = [];
-  lines.push('═══════════════════════════════');
-  lines.push('  RANGKUMAN KEUANGAN — KASKU');
-  lines.push('  Dihasilkan: ' + dateStr);
-  lines.push('═══════════════════════════════');
-  lines.push('');
+  /* Big cards */
+  const bizEl = document.getElementById('sum-biz-net');
+  bizEl.textContent = (d.bizNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.bizNet));
+  bizEl.className = 'sbc-amt ' + (d.bizNet >= 0 ? 'pos' : 'neg');
+  document.getElementById('sum-prv-exp').textContent = '- ' + rp(d.prvExp);
 
-  if (!S.transactions.length) {
-    lines.push('Belum ada transaksi.');
-    return lines.join('\n');
+  /* Mini stats */
+  document.getElementById('sum-saldo').textContent   = rp(d.saldo);
+  document.getElementById('sum-tot-inc').textContent = '+ ' + rp(d.allInc);
+  document.getElementById('sum-tot-exp').textContent = '- ' + rp(d.allExp);
+
+  /* Trend chart */
+  _drawTrend(d.weeks);
+
+  /* Bisnis vs Pribadi bar */
+  const totalExp = d.bizExp + d.prvExp;
+  const bizPct = totalExp > 0 ? Math.round(d.bizExp / totalExp * 100) : 0;
+  const prvPct = 100 - bizPct;
+  document.getElementById('sum-bvp-biz').style.width = bizPct + '%';
+  document.getElementById('sum-bvp-biz').textContent = bizPct > 8 ? bizPct+'%' : '';
+  document.getElementById('sum-bvp-prv').style.width = prvPct + '%';
+  document.getElementById('sum-bvp-prv').textContent = prvPct > 8 ? prvPct+'%' : '';
+  document.getElementById('sum-bvp-biz-pct').textContent = 'Bisnis ' + bizPct + '%  ' + rp(d.bizExp);
+  document.getElementById('sum-bvp-prv-pct').textContent = 'Pribadi ' + prvPct + '%  ' + rp(d.prvExp);
+
+  /* Category breakdown */
+  const maxAmt = d.cats[0]?.amt || 1;
+  document.getElementById('sum-cats').innerHTML = d.cats.length
+    ? d.cats.map(c => `<div class="sum-cat-row">
+        <div class="sum-cat-lbl">${c.ic} ${c.lbl}</div>
+        <div class="sum-cat-bar-wrap"><div class="sum-cat-bar" style="width:${Math.round(c.amt/maxAmt*100)}%"></div></div>
+        <div class="sum-cat-amt">- ${rp(c.amt)}</div>
+      </div>`).join('')
+    : '<div style="font-size:13px;color:var(--text3)">Belum ada pengeluaran.</div>';
+
+  /* Text summary */
+  document.getElementById('summary-content').textContent = generateSummary(d);
+}
+
+function _drawTrend(weeks) {
+  const canvas = document.getElementById('chart-trend');
+  if (!canvas) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.parentElement.clientWidth - 28;
+  const H   = 160;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs    = getComputedStyle(document.documentElement);
+  const cInc  = getComputedStyle(document.body).getPropertyValue('--inc').trim() || '#1565c0';
+  const cExp  = getComputedStyle(document.body).getPropertyValue('--exp').trim() || '#c62828';
+  const cBord = cs.getPropertyValue('--border').trim() || '#e8e9f0';
+  const cTxt  = cs.getPropertyValue('--text2').trim() || '#6b7280';
+
+  /* Filter to weeks with data (skip empty leading weeks) */
+  let start = 0;
+  while (start < weeks.length - 1 && weeks[start].inc === 0 && weeks[start].exp === 0) start++;
+  const vis = weeks.slice(start);
+  if (!vis.length) {
+    ctx.fillStyle = cTxt; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Belum ada data', W/2, H/2);
+    return;
   }
 
-  let grandInc = 0, grandExp = 0;
+  const padL = 4, padR = 4, padT = 12, padB = 30;
+  const cW   = (W - padL - padR) / vis.length;
+  const bW   = Math.max(4, Math.min(18, cW * 0.3));
+  const maxV = Math.max(...vis.map(w => Math.max(w.inc, w.exp)), 1);
+  const cH   = H - padT - padB;
 
-  S.wallets.forEach(w => {
-    const txs = S.transactions
-      .filter(t => t.walletId === w.id)
-      .sort((a,b) => ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
-    if (!txs.length) return;
+  /* Grid line */
+  ctx.strokeStyle = cBord; ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(padL, padT + cH/2); ctx.lineTo(W-padR, padT + cH/2); ctx.stroke();
+  ctx.setLineDash([]);
 
-    let wInc = 0, wExp = 0;
-    lines.push('▌ ' + w.name);
-    lines.push('  Saldo saat ini: ' + rp(w.balance));
-    lines.push('───────────────────────────────');
+  vis.forEach((w, i) => {
+    const cx = padL + i * cW + cW / 2;
 
-    txs.forEach(t => {
-      const c   = catInfo(t.category);
-      const inc = t.type === 'income';
-      const dl  = t.date ? fmtDate(t.date) : '–';
-      const tl  = t.time ? ' ' + t.time : '';
-      const nl  = t.note ? ' | ' + t.note : '';
-      lines.push('  ' + dl + tl);
-      lines.push('  ' + (inc ? '[+]' : '[-]') + ' ' + c.ic + ' ' + c.lbl + nl);
-      lines.push('  ' + (inc ? '+' : '-') + ' ' + rp(t.amount));
-      lines.push('');
-      if (inc) wInc += t.amount; else wExp += t.amount;
-    });
+    /* Income bar */
+    const iH = (w.inc / maxV) * cH;
+    ctx.fillStyle = cInc + 'cc';
+    ctx.beginPath();
+    ctx.roundRect(cx - bW - 2, padT + cH - iH, bW, iH, [3,3,0,0]);
+    ctx.fill();
 
-    grandInc += wInc; grandExp += wExp;
-    lines.push('  Pemasukan : + ' + rp(wInc));
-    lines.push('  Pengeluaran: - ' + rp(wExp));
-    lines.push('');
+    /* Expense bar */
+    const eH = (w.exp / maxV) * cH;
+    ctx.fillStyle = cExp + 'cc';
+    ctx.beginPath();
+    ctx.roundRect(cx + 2, padT + cH - eH, bW, eH, [3,3,0,0]);
+    ctx.fill();
+
+    /* Label */
+    ctx.fillStyle = cTxt; ctx.font = `${Math.max(8,Math.min(10,cW*0.35))}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(w.lbl, cx, H - 8);
   });
 
-  const allBal = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
-  lines.push('═══════════════════════════════');
-  lines.push('TOTAL SEMUA DOMPET');
-  lines.push('  Pemasukan : + ' + rp(grandInc));
-  lines.push('  Pengeluaran: - ' + rp(grandExp));
-  lines.push('  Saldo total: ' + rp(allBal));
-  lines.push('  Jumlah transaksi: ' + S.transactions.length);
-  lines.push('═══════════════════════════════');
-  lines.push('');
-  lines.push('Tagihan aktif:');
-  const unpaid = S.bills.filter(b => !b.paid);
-  if (!unpaid.length) {
-    lines.push('  (tidak ada tagihan belum lunas)');
-  } else {
-    unpaid.forEach(b => {
-      lines.push('  • ' + b.title + ' — ' + rp(b.amount) + ' | Jatuh tempo: ' + (b.dueDate ? fmtDate(b.dueDate) : '–'));
-    });
-  }
+  /* Legend */
+  const leg = document.getElementById('chart-trend-legend');
+  leg.innerHTML =
+    `<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:8px;border-radius:2px;background:${cInc}cc"></div><span style="font-size:11px;font-weight:700;color:var(--text2)">Pemasukan</span></div>` +
+    `<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:8px;border-radius:2px;background:${cExp}cc"></div><span style="font-size:11px;font-weight:700;color:var(--text2)">Pengeluaran</span></div>`;
+}
 
-  return lines.join('\n');
+/* ════════════════════════════
+   RANGKUMAN — teks salin
+════════════════════════════ */
+function generateSummary(d) {
+  d = d || _sumData();
+  const now = new Date();
+  const MON = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const dateStr = now.getDate()+' '+MON[now.getMonth()]+' '+now.getFullYear()+' '+
+    now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+
+  const L = [];
+  L.push('═══════════════════════════════');
+  L.push('  RANGKUMAN KEUANGAN — KASKU');
+  L.push('  '+dateStr);
+  L.push('═══════════════════════════════');
+  L.push('');
+  L.push('▸ BISNIS');
+  L.push('  Pemasukan Bisnis : + '+rp(d.bizInc));
+  L.push('  Pengeluaran Bisnis: - '+rp(d.bizExp));
+  L.push('  Keuntungan Bersih: '+(d.bizNet>=0?'+ ':'- ')+rp(Math.abs(d.bizNet)));
+  L.push('');
+  L.push('▸ PRIBADI');
+  L.push('  Pengeluaran Pribadi: - '+rp(d.prvExp));
+  L.push('');
+  L.push('▸ TOTAL (semua dompet)');
+  L.push('  Saldo    : '+rp(d.saldo));
+  L.push('  Masuk    : + '+rp(d.allInc));
+  L.push('  Keluar   : - '+rp(d.allExp));
+  L.push('  Transaksi: '+S.transactions.filter(t=>t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out').length);
+  L.push('');
+
+  /* Per-wallet detail */
+  S.wallets.forEach(w => {
+    const txs = S.transactions
+      .filter(t => t.walletId===w.id)
+      .sort((a,b)=>((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+    if (!txs.length) return;
+    let wInc=0, wExp=0;
+    L.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    L.push('▌ '+w.name+'  (Saldo: '+rp(w.balance)+')');
+    L.push('');
+    txs.forEach(t => {
+      const c  = catInfo(t.category);
+      const inc= t.type==='income';
+      const tp = t.tipe && t.tipe!=='transfer' ? ' ['+t.tipe+']' : '';
+      L.push('  '+(t.date||'?')+' '+(t.time||''));
+      L.push('  '+(inc?'[+]':'[-]')+' '+c.lbl+tp+(t.note?' | '+t.note:''));
+      L.push('  '+(inc?'+ ':'- ')+rp(t.amount));
+      L.push('');
+      if (t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out') {
+        if (inc) wInc+=t.amount; else wExp+=t.amount;
+      }
+    });
+    L.push('  Masuk : + '+rp(wInc));
+    L.push('  Keluar: - '+rp(wExp));
+    L.push('');
+  });
+
+  /* Bills */
+  L.push('═══════════════════════════════');
+  L.push('TAGIHAN BELUM LUNAS');
+  const unpaid = S.bills.filter(b=>!b.paid);
+  if (!unpaid.length) L.push('  (tidak ada)');
+  else unpaid.forEach(b => L.push('  • '+b.title+' — '+rp(b.amount)+' | Jatuh tempo: '+(b.dueDate?fmtDate(b.dueDate):'–')));
+
+  return L.join('\n');
 }
 
 function copySummary() {
