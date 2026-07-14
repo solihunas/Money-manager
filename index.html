@@ -252,6 +252,7 @@
       border-top:1px solid var(--border);
       display:flex; align-items:center;
       flex-shrink:0;
+      overflow:visible;
     }
     .nav-btn {
       flex:1; display:flex; flex-direction:column;
@@ -263,14 +264,15 @@
     .nav-btn svg { width:20px; height:20px; stroke-width:1.8; }
     .nav-btn.active { color:var(--primary); }
     .nav-fab {
-      flex-shrink:0; width:50px; height:50px; border-radius:50%;
+      flex-shrink:0; width:52px; height:52px; border-radius:50%;
       background:linear-gradient(135deg,var(--primary),var(--pri2));
       border:none; color:white; font-size:26px;
       display:flex; align-items:center; justify-content:center;
       padding:0; line-height:1;
-      cursor:pointer; margin-top:-18px;
+      cursor:pointer; margin-top:-20px;
       box-shadow:0 4px 16px rgba(88,86,214,.45);
       transition:transform .15s;
+      position:relative; z-index:10;
     }
     .nav-fab:active { transform:scale(.88); }
 
@@ -532,39 +534,32 @@
        RANGKUMAN / SUMMARY
     ══════════════════════════ */
     .sum-wrap { padding:12px 16px 0; }
-    .sum-big-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
-    .sum-big-card {
-      border-radius:16px; padding:14px 14px 12px;
-      background:var(--card); box-shadow:var(--sh);
-    }
-    .sbc-label { font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
-    .sbc-amt { font-size:17px; font-weight:900; line-height:1.2; }
-    .sbc-amt.pos { color:var(--green); }
-    .sbc-amt.neg { color:var(--red); }
-    .sbc-amt.prv { color:var(--primary); }
-    .sbc-sub { font-size:10px; color:var(--text3); margin-top:4px; }
-    .sum-mini-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
-    .sum-mini { background:var(--card); border-radius:12px; padding:10px 10px; box-shadow:var(--sh); text-align:center; }
-    .smi-lbl { font-size:9px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
-    .smi-val { font-size:12px; font-weight:900; color:var(--text); }
-    .smi-val.inc { color:var(--inc); }
-    .smi-val.exp { color:var(--exp); }
-    .sum-section { background:var(--card); border-radius:16px; padding:14px 14px 12px; box-shadow:var(--sh); margin-bottom:10px; }
-    .sum-sec-ttl { font-size:13px; font-weight:800; color:var(--text); margin-bottom:12px; }
+    /* ── 3 Stat Cards ── */
+    .sc-card { background:var(--card); border-radius:16px; padding:16px 18px 14px; box-shadow:var(--sh); margin-bottom:10px; }
+    .sc-head { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+    .sc-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-top:1px solid var(--border); }
+    .sc-row:first-of-type { border-top:none; }
+    .sc-lbl { font-size:13px; font-weight:600; color:var(--text2); }
+    .sc-val { font-size:14px; font-weight:800; text-align:right; }
+    .sc-sum { border-top:1.5px solid var(--border) !important; margin-top:4px; padding-top:12px !important; }
+    .sc-sum .sc-lbl { font-size:14px; font-weight:800; color:var(--text); }
+    .sc-sum .sc-val { font-size:17px; font-weight:900; }
+    .sum-section { background:var(--card); border-radius:16px; padding:14px 16px 12px; box-shadow:var(--sh); margin-bottom:10px; }
+    .sum-sec-ttl { font-size:14px; font-weight:800; color:var(--text); margin-bottom:12px; }
     .sum-chart-canvas { width:100%; display:block; border-radius:8px; }
     .sum-bvp-bar { height:22px; border-radius:6px; overflow:hidden; display:flex; margin-bottom:8px; }
     .sum-bvp-seg { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white; transition:width .4s; }
     .sum-bvp-leg { display:flex; gap:16px; }
     .sum-bvp-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
     .sum-cat-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .sum-cat-lbl { font-size:12px; font-weight:700; color:var(--text); min-width:0; flex:0 0 110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sum-cat-lbl { font-size:13px; font-weight:700; color:var(--text); min-width:0; flex:0 0 116px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .sum-cat-bar-wrap { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
     .sum-cat-bar { height:100%; border-radius:4px; background:var(--exp); }
-    .sum-cat-amt { font-size:11px; font-weight:800; color:var(--exp); flex-shrink:0; min-width:72px; text-align:right; }
+    .sum-cat-amt { font-size:12px; font-weight:800; color:var(--exp); flex-shrink:0; min-width:80px; text-align:right; }
     .sum-divider { display:flex; align-items:center; gap:10px; margin:16px 0 8px; }
     .sum-divider::before,.sum-divider::after { content:''; flex:1; height:1px; background:var(--border); }
-    .sum-divider span { font-size:11px; font-weight:700; color:var(--text3); white-space:nowrap; }
-    .sum-text-box { background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);font-family:'Courier New',monospace;font-size:11px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7;max-height:280px;overflow-y:auto; }
+    .sum-divider span { font-size:12px; font-weight:700; color:var(--text3); white-space:nowrap; }
+    .sum-text-box { background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:var(--sh);font-family:'Courier New',monospace;font-size:13px;font-weight:600;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.75;max-height:340px;overflow-y:auto; }
 
     /* ── TX Detail modal ── */
     .td-ico-big { font-size:44px; text-align:center; margin:8px 0 12px; }
@@ -848,31 +843,54 @@
       <h2>Rangkuman</h2>
     </div>
     <div class="sum-wrap">
-      <!-- Bagian A: Statistik -->
-      <div class="sum-big-row">
-        <div class="sum-big-card">
-          <div class="sbc-label">Keuntungan Bisnis</div>
-          <div class="sbc-amt" id="sum-biz-net">Rp 0</div>
-          <div class="sbc-sub">Masuk − Keluar Bisnis</div>
+      <!-- Bagian A: Statistik — 3 Kartu -->
+      <div class="sc-card">
+        <div class="sc-head">Bisnis</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Pemasukan Bisnis</span>
+          <span class="sc-val" id="sc-biz-inc" style="color:var(--inc)">Rp 0</span>
         </div>
-        <div class="sum-big-card">
-          <div class="sbc-label">Pengeluaran Pribadi</div>
-          <div class="sbc-amt prv" id="sum-prv-exp">Rp 0</div>
-          <div class="sbc-sub">Total keluar (Pribadi)</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Pengeluaran Bisnis</span>
+          <span class="sc-val" id="sc-biz-exp" style="color:var(--exp)">Rp 0</span>
+        </div>
+        <div class="sc-row sc-sum">
+          <span class="sc-lbl">Keuntungan Bisnis</span>
+          <span class="sc-val" id="sc-biz-net">Rp 0</span>
         </div>
       </div>
-      <div class="sum-mini-row">
-        <div class="sum-mini">
-          <div class="smi-lbl">Saldo</div>
-          <div class="smi-val" id="sum-saldo">Rp 0</div>
+      <div class="sc-card">
+        <div class="sc-head">Pribadi</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Pemasukan Pribadi</span>
+          <span class="sc-val" id="sc-prv-inc" style="color:var(--inc)">Rp 0</span>
         </div>
-        <div class="sum-mini">
-          <div class="smi-lbl">Total Masuk</div>
-          <div class="smi-val inc" id="sum-tot-inc">Rp 0</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Pengeluaran Pribadi</span>
+          <span class="sc-val" id="sc-prv-exp" style="color:var(--exp)">Rp 0</span>
         </div>
-        <div class="sum-mini">
-          <div class="smi-lbl">Total Keluar</div>
-          <div class="smi-val exp" id="sum-tot-exp">Rp 0</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Alihkan ke Investasi</span>
+          <span class="sc-val" id="sc-prv-inv" style="color:var(--text)">Rp 0</span>
+        </div>
+        <div class="sc-row sc-sum">
+          <span class="sc-lbl">Sisa Pribadi</span>
+          <span class="sc-val" id="sc-prv-net">Rp 0</span>
+        </div>
+      </div>
+      <div class="sc-card">
+        <div class="sc-head">Saldo</div>
+        <div class="sc-row">
+          <span class="sc-lbl">Total Pemasukan</span>
+          <span class="sc-val" id="sc-all-inc" style="color:var(--inc)">Rp 0</span>
+        </div>
+        <div class="sc-row">
+          <span class="sc-lbl">Total Pengeluaran</span>
+          <span class="sc-val" id="sc-all-exp" style="color:var(--exp)">Rp 0</span>
+        </div>
+        <div class="sc-row sc-sum">
+          <span class="sc-lbl">Sisa Saldo</span>
+          <span class="sc-val" id="sc-all-net">Rp 0</span>
         </div>
       </div>
 
@@ -1139,29 +1157,22 @@ const CAT_IN = [
   {id:'lain_in',   ic:'💰', lbl:'Lainnya'},
 ];
 const CAT_EX = [
-  {id:'operasional', ic:'🖥️', lbl:'Operasional Bisnis'},
-  {id:'kebutuhan',   ic:'🛍️', lbl:'Kebutuhan Pribadi'},
-  {id:'keluarga',    ic:'👨‍👩‍👧', lbl:'Keluarga'},
-  {id:'utilitas',    ic:'🔌', lbl:'Utilitas'},
-  {id:'kesehatan',   ic:'🏥', lbl:'Kesehatan'},
-  {id:'tarik_tunai', ic:'💵', lbl:'Tarik Tunai'},
-  {id:'tagihan',     ic:'⚡', lbl:'Tagihan'},
-  {id:'tfr_out',     ic:'↗️', lbl:'Transfer'},
-  {id:'lain_ex',     ic:'💸', lbl:'Lainnya'},
+  {id:'operasional',  ic:'🖥️',  lbl:'Operasional Bisnis'},
+  {id:'kebutuhan',    ic:'🛍️',  lbl:'Kebutuhan Pribadi'},
+  {id:'keluarga',     ic:'👨‍👩‍👧', lbl:'Keluarga'},
+  {id:'utilitas',     ic:'🔧',  lbl:'Tools Bisnis'},
+  {id:'kesehatan',    ic:'🏥',  lbl:'Kesehatan'},
+  {id:'tarik_tunai',  ic:'💵',  lbl:'Tarik Tunai'},
+  {id:'tagihan',      ic:'⚡',  lbl:'Tagihan'},
+  {id:'investasi_ex', ic:'📊',  lbl:'Alihkan ke Investasi'},
+  {id:'tfr_out',      ic:'↗️',  lbl:'Transfer'},
+  {id:'lain_ex',      ic:'💸',  lbl:'Lainnya'},
 ];
 const ALL_CATS = [...CAT_IN, ...CAT_EX];
 function catInfo(id) { return ALL_CATS.find(c=>c.id===id) || {ic:'💰',lbl:id||'Lainnya'}; }
 
-function txCatLabel(t) {
-  const c = catInfo(t.category);
-  if ((t.category === 'lain_in' || t.category === 'lain_ex') && t.note) return c.lbl + ' – ' + t.note;
-  return c.lbl;
-}
-function txDisplayName(t) {
-  const c = catInfo(t.category);
-  if ((t.category === 'lain_in' || t.category === 'lain_ex') && t.note) return c.lbl + ' – ' + t.note;
-  return t.note || c.lbl;
-}
+function txCatLabel(t) { return catInfo(t.category).lbl; }
+function txDisplayName(t) { return t.note || catInfo(t.category).lbl; }
 
 /* ─── Wallet icons ─── */
 const W_ICONS_BASIC   = ['👛','💳','🏦','💵','📱','🏧','💎','🏪','💰','📊'];
@@ -1989,17 +2000,24 @@ function _sumData() {
   /* Exclude pure transfer transactions from all stats */
   const txs = S.transactions.filter(t => t.tipe !== 'transfer' && t.category !== 'tfr_in' && t.category !== 'tfr_out');
 
+  /* BISNIS */
   const bizTx  = txs.filter(t => t.tipe === 'bisnis');
   const bizInc = bizTx.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
   const bizExp = bizTx.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
   const bizNet = bizInc - bizExp;
 
+  /* PRIBADI — investasi_ex is its own line, not counted in prvExp */
   const prvTx  = txs.filter(t => t.tipe === 'pribadi' || !t.tipe);
-  const prvExp = prvTx.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+  const prvInc = prvTx.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
+  const prvInv = prvTx.filter(t => t.type === 'expense' && t.category === 'investasi_ex').reduce((a,t)=>a+t.amount,0);
+  const prvExp = prvTx.filter(t => t.type === 'expense' && t.category !== 'investasi_ex').reduce((a,t)=>a+t.amount,0);
+  const prvNet = prvInc - prvExp - prvInv;
 
-  const allInc = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
-  const allExp = txs.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
-  const saldo  = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
+  /* SALDO — all income & expense (excl transfer), investasi_ex IS counted in allExp */
+  const allInc    = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
+  const allExp    = txs.filter(t => t.type === 'expense').reduce((a,t)=>a+t.amount,0);
+  const sisaSaldo = allInc - allExp;
+  const saldo     = S.wallets.reduce((a,w)=>a+(w.balance||0),0);
 
   /* Weekly trend — last 8 periods */
   const weeks = [];
@@ -2022,7 +2040,7 @@ function _sumData() {
     .sort((a,b) => b.amt - a.amt)
     .slice(0, 7);
 
-  return { bizNet, bizInc, bizExp, prvExp, allInc, allExp, saldo, weeks, cats };
+  return { bizInc, bizExp, bizNet, prvInc, prvExp, prvInv, prvNet, allInc, allExp, sisaSaldo, saldo, weeks, cats };
 }
 
 /* ════════════════════════════
@@ -2034,22 +2052,31 @@ function renderSummary() {
   /* Equity curve */
   _drawEquityCurve(buildEquityCurve());
 
-  /* Big cards */
-  const bizEl = document.getElementById('sum-biz-net');
-  bizEl.textContent = (d.bizNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.bizNet));
-  bizEl.className = 'sbc-amt ' + (d.bizNet >= 0 ? 'pos' : 'neg');
-  document.getElementById('sum-prv-exp').textContent = '- ' + rp(d.prvExp);
+  /* 3 Stat Cards */
+  document.getElementById('sc-biz-inc').textContent = '+ ' + rp(d.bizInc);
+  document.getElementById('sc-biz-exp').textContent = '- ' + rp(d.bizExp);
+  const bizNetEl = document.getElementById('sc-biz-net');
+  bizNetEl.textContent = (d.bizNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.bizNet));
+  bizNetEl.style.color = d.bizNet >= 0 ? 'var(--inc)' : 'var(--exp)';
 
-  /* Mini stats */
-  document.getElementById('sum-saldo').textContent   = rp(d.saldo);
-  document.getElementById('sum-tot-inc').textContent = '+ ' + rp(d.allInc);
-  document.getElementById('sum-tot-exp').textContent = '- ' + rp(d.allExp);
+  document.getElementById('sc-prv-inc').textContent = '+ ' + rp(d.prvInc);
+  document.getElementById('sc-prv-exp').textContent = '- ' + rp(d.prvExp);
+  document.getElementById('sc-prv-inv').textContent = rp(d.prvInv);
+  const prvNetEl = document.getElementById('sc-prv-net');
+  prvNetEl.textContent = (d.prvNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.prvNet));
+  prvNetEl.style.color = d.prvNet >= 0 ? 'var(--inc)' : 'var(--exp)';
+
+  document.getElementById('sc-all-inc').textContent = '+ ' + rp(d.allInc);
+  document.getElementById('sc-all-exp').textContent = '- ' + rp(d.allExp);
+  const allNetEl = document.getElementById('sc-all-net');
+  allNetEl.textContent = (d.sisaSaldo >= 0 ? '+ ' : '- ') + rp(Math.abs(d.sisaSaldo));
+  allNetEl.style.color = d.sisaSaldo >= 0 ? 'var(--inc)' : 'var(--exp)';
 
   /* Trend chart */
   _drawTrend(d.weeks);
 
   /* Bisnis vs Pribadi bar */
-  const totalExp = d.bizExp + d.prvExp;
+  const totalExp = d.allExp;
   const bizPct = totalExp > 0 ? Math.round(d.bizExp / totalExp * 100) : 0;
   const prvPct = 100 - bizPct;
   document.getElementById('sum-bvp-biz').style.width = bizPct + '%';
@@ -2057,7 +2084,7 @@ function renderSummary() {
   document.getElementById('sum-bvp-prv').style.width = prvPct + '%';
   document.getElementById('sum-bvp-prv').textContent = prvPct > 8 ? prvPct+'%' : '';
   document.getElementById('sum-bvp-biz-pct').textContent = 'Bisnis ' + bizPct + '%  ' + rp(d.bizExp);
-  document.getElementById('sum-bvp-prv-pct').textContent = 'Pribadi ' + prvPct + '%  ' + rp(d.prvExp);
+  document.getElementById('sum-bvp-prv-pct').textContent = 'Pribadi ' + prvPct + '%  ' + rp(d.prvExp + d.prvInv);
 
   /* Category breakdown */
   const maxAmt = d.cats[0]?.amt || 1;
@@ -2275,18 +2302,22 @@ function generateSummary(d) {
   L.push('═══════════════════════════════');
   L.push('');
   L.push('▸ BISNIS');
-  L.push('  Pemasukan Bisnis : + '+rp(d.bizInc));
+  L.push('  Pemasukan Bisnis  : + '+rp(d.bizInc));
   L.push('  Pengeluaran Bisnis: - '+rp(d.bizExp));
-  L.push('  Keuntungan Bersih: '+(d.bizNet>=0?'+ ':'- ')+rp(Math.abs(d.bizNet)));
+  L.push('  Keuntungan Bisnis : '+(d.bizNet>=0?'+ ':'- ')+rp(Math.abs(d.bizNet)));
   L.push('');
   L.push('▸ PRIBADI');
+  L.push('  Pemasukan Pribadi : + '+rp(d.prvInc));
   L.push('  Pengeluaran Pribadi: - '+rp(d.prvExp));
+  L.push('  Alihkan ke Investasi: '+rp(d.prvInv));
+  L.push('  Sisa Pribadi      : '+(d.prvNet>=0?'+ ':'- ')+rp(Math.abs(d.prvNet)));
   L.push('');
-  L.push('▸ TOTAL (semua dompet)');
-  L.push('  Saldo    : '+rp(d.saldo));
-  L.push('  Masuk    : + '+rp(d.allInc));
-  L.push('  Keluar   : - '+rp(d.allExp));
-  L.push('  Transaksi: '+S.transactions.filter(t=>t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out').length);
+  L.push('▸ SALDO (semua dompet)');
+  L.push('  Total Pemasukan  : + '+rp(d.allInc));
+  L.push('  Total Pengeluaran: - '+rp(d.allExp));
+  L.push('  Sisa Saldo       : '+(d.sisaSaldo>=0?'+ ':'- ')+rp(Math.abs(d.sisaSaldo)));
+  L.push('  Saldo Aktual     : '+rp(d.saldo));
+  L.push('  Transaksi        : '+S.transactions.filter(t=>t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out').length);
   L.push('');
 
   /* Per-wallet detail */
@@ -2303,7 +2334,7 @@ function generateSummary(d) {
       const inc= t.type==='income';
       const tp = t.tipe && t.tipe!=='transfer' ? ' ['+t.tipe+']' : '';
       const catLbl = txCatLabel(t);
-      const noteStr = (t.category !== 'lain_in' && t.category !== 'lain_ex' && t.note) ? ' | '+t.note : '';
+      const noteStr = t.note ? ' | '+t.note : '';
       L.push('  '+(t.date||'?')+' '+(t.time||''));
       L.push('  '+(inc?'[+]':'[-]')+' '+catLbl+tp+noteStr);
       L.push('  '+(inc?'+ ':'- ')+rp(t.amount));
