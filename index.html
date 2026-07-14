@@ -566,6 +566,18 @@
     .sum-divider span { font-size:11px; font-weight:700; color:var(--text3); white-space:nowrap; }
     .sum-text-box { background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--sh);font-family:'Courier New',monospace;font-size:11px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.7;max-height:280px;overflow-y:auto; }
 
+    /* ── TX Detail modal ── */
+    .td-ico-big { font-size:44px; text-align:center; margin:8px 0 12px; }
+    .td-amt { text-align:center; font-size:26px; font-weight:900; margin-bottom:16px; }
+    .td-row { display:flex; align-items:flex-start; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+    .td-row:last-child { border-bottom:none; }
+    .td-lbl { font-size:12px; font-weight:700; color:var(--text2); width:90px; flex-shrink:0; }
+    .td-val { font-size:13px; font-weight:700; color:var(--text); text-align:right; word-break:break-word; flex:1; }
+    .td-actions { display:flex; gap:10px; margin-top:16px; }
+    .td-actions .btn { flex:1; }
+    .pencil-btn { background:none; border:none; cursor:pointer; padding:4px 6px; color:var(--primary); font-size:14px; flex-shrink:0; border-radius:8px; line-height:1; }
+    .pencil-btn:active { background:var(--pri-lt); }
+
     /* ── Misc ── */
     .spacer { height:16px; }
     .date-group { padding:10px 18px 4px; font-size:12px; font-weight:700; color:var(--text2); }
@@ -864,6 +876,12 @@
         </div>
       </div>
 
+      <!-- Equity Curve -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Kurva Saldo</div>
+        <canvas id="chart-equity" class="sum-chart-canvas" height="160"></canvas>
+      </div>
+
       <!-- Tren Cash Flow -->
       <div class="sum-section">
         <div class="sum-sec-ttl">Tren Cash Flow</div>
@@ -994,6 +1012,23 @@
   </div>
 </div>
 
+<!-- ═══ MODAL: TX DETAIL ═══ -->
+<div class="ov" id="ov-tx-detail">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Detail Transaksi</div>
+    <div class="sh-body">
+      <div class="td-ico-big" id="td-ico"></div>
+      <div class="td-amt" id="td-amt"></div>
+      <div id="td-rows"></div>
+      <div class="td-actions">
+        <button class="btn btn-out" onclick="closeOv('ov-tx-detail')">Tutup</button>
+        <button class="btn btn-pri" onclick="_editFromDetail()">✏️ Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ CONFIRM ═══ -->
 <div class="conf-ov" id="conf-ov">
   <div class="conf-box">
@@ -1117,6 +1152,17 @@ const CAT_EX = [
 const ALL_CATS = [...CAT_IN, ...CAT_EX];
 function catInfo(id) { return ALL_CATS.find(c=>c.id===id) || {ic:'💰',lbl:id||'Lainnya'}; }
 
+function txCatLabel(t) {
+  const c = catInfo(t.category);
+  if ((t.category === 'lain_in' || t.category === 'lain_ex') && t.note) return c.lbl + ' – ' + t.note;
+  return c.lbl;
+}
+function txDisplayName(t) {
+  const c = catInfo(t.category);
+  if ((t.category === 'lain_in' || t.category === 'lain_ex') && t.note) return c.lbl + ' – ' + t.note;
+  return t.note || c.lbl;
+}
+
 /* ─── Wallet icons ─── */
 const W_ICONS_BASIC   = ['👛','💳','🏦','💵','📱','🏧','💎','🏪','💰','📊'];
 const W_ICONS_DIGITAL = ['dana','gopay','ovo','shopee','qris','linkaja'];
@@ -1158,6 +1204,8 @@ let _histTypeF   = 'all';
 let _histWalF    = '';
 let _homeWalF    = '';
 let _selectedBill = null;
+let _editTxId    = null;
+let _detailTxId  = null;
 
 const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history', 'sc-notes':'nb-catatan', 'sc-summary':'nb-rangkuman' };
 const NO_NAV = ['sc-wallet-form','sc-wallet-detail','sc-add-tx'];
@@ -1300,7 +1348,7 @@ function txRow(t) {
   return `<div class="tx-item">
     <div class="tx-ico" style="background:${bg}">${c.ic}</div>
     <div class="tx-info">
-      <div class="tx-name">${esc(t.note || c.lbl)}${tipeBadge(t)}</div>
+      <div class="tx-name">${esc(txDisplayName(t))}${tipeBadge(t)}</div>
       <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${fmtShort(t.date)}${timeLbl}</div>
     </div>
     <div class="tx-right">
@@ -1429,8 +1477,8 @@ function openWallet(id) {
     return `<div class="tx-item">
       <div class="tx-ico" style="background:${bg}">${c.ic}</div>
       <div class="tx-info">
-        <div class="tx-name">${esc(t.note||c.lbl)}</div>
-        <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${c.lbl}</span> · ${fmtDate(t.date)}${timeLbl}</div>
+        <div class="tx-name">${esc(txDisplayName(t))}</div>
+        <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(txCatLabel(t))}</span> · ${fmtDate(t.date)}${timeLbl}</div>
       </div>
       <div class="tx-right">
         <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+ ':'- '}${rp(t.amount)}</div>
@@ -1511,18 +1559,41 @@ function doTransfer() {
    TAMBAH TRANSAKSI
 ════════════════════════════ */
 function setupAddTx() {
-  _txType = 'expense'; _txCat = null; _selectedBill = null; _txTipe = 'pribadi';
-  document.getElementById('tx-form-title').textContent = 'Tambah Transaksi';
-  document.getElementById('txf-amt').value  = '';
-  document.getElementById('txf-note').value = '';
-  document.getElementById('txf-date').value = todayStr();
-  document.getElementById('txf-bill-section').style.display = 'none';
-  const wSel = document.getElementById('txf-wallet');
-  wSel.innerHTML = S.wallets.length
-    ? S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('')
-    : '<option value="">– Tambah dompet dulu –</option>';
-  setTxType('expense');
-  setTxTipe('pribadi');
+  if (_editTxId) {
+    const t = S.transactions.find(x => x.id === _editTxId);
+    if (!t) { _editTxId = null; setupAddTx(); return; }
+    document.getElementById('tx-form-title').textContent = 'Edit Transaksi';
+    document.getElementById('txf-bill-section').style.display = 'none';
+    const wSel = document.getElementById('txf-wallet');
+    wSel.innerHTML = S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('');
+    wSel.value = t.walletId;
+    wSel.disabled = true;
+    setTxType(t.type);
+    _txCat = t.category;
+    const catBtn = document.getElementById('cb-' + t.category);
+    if (catBtn) catBtn.classList.add('sel');
+    const editTipe = (t.tipe === 'transfer') ? 'pribadi' : (t.tipe || 'pribadi');
+    setTxTipe(editTipe);
+    document.getElementById('txf-tipe-wrap').style.display = (t.tipe === 'transfer') ? 'none' : '';
+    document.getElementById('txf-amt').value  = t.amount;
+    document.getElementById('txf-date').value = t.date || todayStr();
+    document.getElementById('txf-note').value = t.note || '';
+  } else {
+    _txType = 'expense'; _txCat = null; _selectedBill = null; _txTipe = 'pribadi';
+    document.getElementById('tx-form-title').textContent = 'Tambah Transaksi';
+    document.getElementById('txf-amt').value  = '';
+    document.getElementById('txf-note').value = '';
+    document.getElementById('txf-date').value = todayStr();
+    document.getElementById('txf-bill-section').style.display = 'none';
+    document.getElementById('txf-tipe-wrap').style.display = '';
+    const wSel = document.getElementById('txf-wallet');
+    wSel.disabled = false;
+    wSel.innerHTML = S.wallets.length
+      ? S.wallets.map(w => `<option value="${w.id}">${esc(w.name)}</option>`).join('')
+      : '<option value="">– Tambah dompet dulu –</option>';
+    setTxType('expense');
+    setTxTipe('pribadi');
+  }
 }
 
 function setTxType(type) {
@@ -1614,16 +1685,28 @@ function saveTx() {
   if (!_txCat)        return toast('Pilih kategori','err');
   const w = S.wallets.find(x => x.id === walId);
   if (!w) return;
-  const time = nowTime();
   const tipe = (_txCat === 'tfr_in' || _txCat === 'tfr_out') ? 'transfer' : (_txTipe || 'pribadi');
-  S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, tipe, amount:amt, date, time, note });
-  w.balance += (_txType==='income' ? amt : -amt);
-  // Auto-mark selected bill as paid
-  if (_selectedBill && _txType==='expense') {
-    const b = S.bills.find(x => x.id===_selectedBill);
-    if (b) { b.paid = true; }
+  const wasEdit = !!_editTxId;
+  if (wasEdit) {
+    const old = S.transactions.find(x => x.id === _editTxId);
+    if (old) {
+      const oldW = S.wallets.find(x => x.id === old.walletId);
+      if (oldW) oldW.balance += (old.type === 'income' ? -old.amount : old.amount);
+      old.type = _txType; old.category = _txCat; old.tipe = tipe;
+      old.amount = amt; old.date = date; old.note = note;
+      w.balance += (_txType === 'income' ? amt : -amt);
+    }
+    _editTxId = null;
+  } else {
+    const time = nowTime();
+    S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, tipe, amount:amt, date, time, note });
+    w.balance += (_txType === 'income' ? amt : -amt);
+    if (_selectedBill && _txType === 'expense') {
+      const b = S.bills.find(x => x.id === _selectedBill);
+      if (b) { b.paid = true; }
+    }
   }
-  save(); toast('Transaksi disimpan ✓'); goBack(); renderHome();
+  save(); toast(wasEdit ? 'Transaksi diperbarui ✓' : 'Transaksi disimpan ✓'); goBack(); renderHome();
 }
 
 function delTx(id, e) {
@@ -1692,15 +1775,18 @@ function drawHistList() {
          const inc = t.type==='income';
          const bg  = inc ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.1)';
          const timeLbl = t.time ? ' · ' + t.time : '';
-         return `<div class="tx-item">
+         return `<div class="tx-item" onclick="openTxDetail('${t.id}')" style="cursor:pointer">
            <div class="tx-ico" style="background:${bg}">${c.ic}</div>
            <div class="tx-info">
-             <div class="tx-name">${esc(t.note||c.lbl)}</div>
-             <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${c.lbl}${timeLbl}</div>
+             <div class="tx-name">${esc(txDisplayName(t))}${tipeBadge(t)}</div>
+             <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${esc(txCatLabel(t))}${timeLbl}</div>
            </div>
            <div class="tx-right">
              <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+ ':'- '}${rp(t.amount)}</div>
-             <button class="del-btn" onclick="delTxHist('${t.id}')">×</button>
+             <div style="display:flex;align-items:center;gap:2px">
+               <button class="pencil-btn" onclick="openEditTx('${t.id}',event)" title="Edit">✏️</button>
+               <button class="del-btn" onclick="delTxHistBtn('${t.id}',event)">×</button>
+             </div>
            </div>
          </div>`;
        }).join('')}
@@ -1717,6 +1803,47 @@ function delTxHist(id) {
     S.transactions = S.transactions.filter(x => x.id !== id);
     save(); toast('Transaksi dihapus'); drawHistList();
   });
+}
+
+function delTxHistBtn(id, e) { if (e) e.stopPropagation(); delTxHist(id); }
+
+function openEditTx(id, e) {
+  if (e) e.stopPropagation();
+  _editTxId = id;
+  goTo('sc-add-tx');
+}
+
+function openTxDetail(id) {
+  const t = S.transactions.find(x => x.id === id);
+  if (!t) return;
+  _detailTxId = id;
+  const c   = catInfo(t.category);
+  const w   = S.wallets.find(x => x.id === t.walletId);
+  const inc = t.type === 'income';
+  document.getElementById('td-ico').textContent = c.ic;
+  document.getElementById('td-amt').innerHTML =
+    `<span style="color:${inc?'var(--inc)':'var(--exp)'}">${inc?'+ ':'- '}${rp(t.amount)}</span>`;
+  const lbl4tipe = !t.tipe ? '–' : t.tipe === 'transfer' ? 'Transfer' : t.tipe === 'bisnis' ? '💼 Bisnis' : '👤 Pribadi';
+  const rows = [
+    { l:'Dompet',   v: esc(w?.name || '–') },
+    { l:'Jenis',    v: inc ? '↑ Pemasukan' : '↓ Pengeluaran' },
+    { l:'Kategori', v: esc(c.ic + ' ' + txCatLabel(t)) },
+    { l:'Label',    v: lbl4tipe },
+    { l:'Tanggal',  v: fmtDate(t.date) },
+    { l:'Jam',      v: t.time || '–' },
+  ];
+  if (t.note && t.category !== 'lain_in' && t.category !== 'lain_ex') {
+    rows.push({ l:'Catatan', v: esc(t.note) });
+  }
+  document.getElementById('td-rows').innerHTML = rows.map(r =>
+    `<div class="td-row"><span class="td-lbl">${r.l}</span><span class="td-val">${r.v}</span></div>`
+  ).join('');
+  openOv('ov-tx-detail');
+}
+
+function _editFromDetail() {
+  closeOv('ov-tx-detail');
+  openEditTx(_detailTxId);
 }
 
 /* ════════════════════════════
@@ -1904,6 +2031,9 @@ function _sumData() {
 function renderSummary() {
   const d = _sumData();
 
+  /* Equity curve */
+  _drawEquityCurve(buildEquityCurve());
+
   /* Big cards */
   const bizEl = document.getElementById('sum-biz-net');
   bizEl.textContent = (d.bizNet >= 0 ? '+ ' : '- ') + rp(Math.abs(d.bizNet));
@@ -2018,6 +2148,117 @@ function _drawTrend(weeks) {
 }
 
 /* ════════════════════════════
+   EQUITY CURVE
+════════════════════════════ */
+function buildEquityCurve() {
+  if (!S.transactions.length) return [];
+  const currentTotal = S.wallets.reduce((a, w) => a + (w.balance || 0), 0);
+  const sorted = [...S.transactions].sort((a, b) =>
+    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
+  );
+  const totalNet = sorted.reduce((a, t) => a + (t.type==='income' ? t.amount : -t.amount), 0);
+  let bal = currentTotal - totalNet;
+  const dateMap = {};
+  sorted.forEach(t => {
+    bal += (t.type === 'income' ? t.amount : -t.amount);
+    dateMap[t.date || ''] = bal;
+  });
+  return Object.entries(dateMap)
+    .filter(([d]) => d)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, bal]) => ({ date, bal }));
+}
+
+function _drawEquityCurve(pts) {
+  const canvas = document.getElementById('chart-equity');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.parentElement.clientWidth - 28;
+  const H   = 160;
+  canvas.width  = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  const cs   = getComputedStyle(document.body);
+  const cPri = cs.getPropertyValue('--primary').trim() || '#5856d6';
+  const cTxt = cs.getPropertyValue('--text2').trim()   || '#6b7280';
+  if (pts.length < 2) {
+    ctx.fillStyle = cTxt; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Belum ada data', W/2, H/2); return;
+  }
+  const padL=4, padR=4, padT=28, padB=24;
+  const cW = W - padL - padR;
+  const cH = H - padT - padB;
+  const bals = pts.map(p => p.bal);
+  const minB = Math.min(...bals), maxB = Math.max(...bals);
+  const range = Math.max(maxB - minB, 1);
+  const n = pts.length;
+  const xs = pts.map((_, i) => padL + (i / (n-1)) * cW);
+  const ys = pts.map(p => padT + cH - ((p.bal - minB) / range) * cH);
+
+  /* ATH index */
+  let athIdx = 0;
+  bals.forEach((b, i) => { if (b > bals[athIdx]) athIdx = i; });
+
+  /* Catmull-Rom → Bezier */
+  function drawSmooth(ctx) {
+    ctx.moveTo(xs[0], ys[0]);
+    for (let i = 1; i < n; i++) {
+      const p0 = i > 1 ? { x:xs[i-2], y:ys[i-2] } : { x:xs[0], y:ys[0] };
+      const p1 = { x:xs[i-1], y:ys[i-1] };
+      const p2 = { x:xs[i],   y:ys[i] };
+      const p3 = i < n-1 ? { x:xs[i+1], y:ys[i+1] } : p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
+  }
+
+  /* Gradient fill */
+  const grad = ctx.createLinearGradient(0, padT, 0, padT + cH);
+  grad.addColorStop(0,   cPri + '55'); grad.addColorStop(0.7, cPri + '11'); grad.addColorStop(1, cPri + '00');
+  ctx.beginPath(); drawSmooth(ctx);
+  ctx.lineTo(xs[n-1], padT + cH); ctx.lineTo(xs[0], padT + cH); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  /* Neon glow: 4 layers outer → inner */
+  [[9,'15'],[5,'35'],[2.5,'80'],[1.2,'ff']].forEach(([lw, alpha]) => {
+    ctx.beginPath(); drawSmooth(ctx);
+    ctx.strokeStyle = cPri + alpha; ctx.lineWidth = lw; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.stroke();
+  });
+
+  /* ATH dot + label */
+  const athX = xs[athIdx], athY = ys[athIdx];
+  ctx.beginPath(); ctx.arc(athX, athY, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+  ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = '#f59e0b'; ctx.textAlign = 'center';
+  const athLblY = Math.max(athY - 10, padT + 10);
+  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), athLblY);
+
+  /* Neon runner at last point */
+  const rx = xs[n-1], ry = ys[n-1];
+  [[14,'18'],[9,'38'],[5,'70']].forEach(([r, alpha]) => {
+    ctx.beginPath(); ctx.arc(rx, ry, r, 0, Math.PI*2);
+    ctx.fillStyle = cPri + alpha; ctx.fill();
+  });
+  ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI*2);
+  ctx.fillStyle = 'white'; ctx.shadowColor = cPri; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+  ctx.beginPath(); ctx.arc(rx, ry, 1.5, 0, Math.PI*2);
+  ctx.fillStyle = cPri; ctx.fill();
+
+  /* Date labels (first & last) */
+  ctx.fillStyle = cTxt; ctx.font = '9px sans-serif'; ctx.shadowBlur = 0;
+  ctx.textAlign = 'left';
+  if (pts[0].date) ctx.fillText(fmtShort(pts[0].date), xs[0], padT + cH + 14);
+  ctx.textAlign = 'right';
+  if (pts[n-1].date) ctx.fillText(fmtShort(pts[n-1].date), xs[n-1], padT + cH + 14);
+}
+
+/* ════════════════════════════
    RANGKUMAN — teks salin
 ════════════════════════════ */
 function generateSummary(d) {
@@ -2059,11 +2300,12 @@ function generateSummary(d) {
     L.push('▌ '+w.name+'  (Saldo: '+rp(w.balance)+')');
     L.push('');
     txs.forEach(t => {
-      const c  = catInfo(t.category);
       const inc= t.type==='income';
       const tp = t.tipe && t.tipe!=='transfer' ? ' ['+t.tipe+']' : '';
+      const catLbl = txCatLabel(t);
+      const noteStr = (t.category !== 'lain_in' && t.category !== 'lain_ex' && t.note) ? ' | '+t.note : '';
       L.push('  '+(t.date||'?')+' '+(t.time||''));
-      L.push('  '+(inc?'[+]':'[-]')+' '+c.lbl+tp+(t.note?' | '+t.note:''));
+      L.push('  '+(inc?'[+]':'[-]')+' '+catLbl+tp+noteStr);
       L.push('  '+(inc?'+ ':'- ')+rp(t.amount));
       L.push('');
       if (t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out') {
@@ -2117,7 +2359,7 @@ function saveProfile() {
 function openOv(id)  { document.getElementById(id).classList.add('open'); }
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 
-['ov-note','ov-bill','ov-transfer','ov-profile'].forEach(id => {
+['ov-note','ov-bill','ov-transfer','ov-profile','ov-tx-detail'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target===this) closeOv(id);
   });
