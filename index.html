@@ -903,6 +903,12 @@
         <canvas id="chart-equity" class="sum-chart-canvas" height="160"></canvas>
       </div>
 
+      <!-- Equity Curve — tanpa investasi -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Kurva Saldo <span style="font-size:11px;font-weight:600;color:var(--text3)">(tanpa investasi)</span></div>
+        <canvas id="chart-equity-noinv" class="sum-chart-canvas" height="160"></canvas>
+      </div>
+
       <!-- Tren Cash Flow -->
       <div class="sum-section">
         <div class="sum-sec-ttl">Tren Cash Flow</div>
@@ -2028,7 +2034,7 @@ function _sumData() {
   const prvInc = prvTx.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
   const prvInv = prvTx.filter(t => t.type === 'expense' && t.category === 'investasi_ex').reduce((a,t)=>a+t.amount,0);
   const prvExp = prvTx.filter(t => t.type === 'expense' && t.category !== 'investasi_ex').reduce((a,t)=>a+t.amount,0);
-  const prvNet = prvInc - prvExp - prvInv;
+  const prvNet = prvInc - prvExp;
 
   /* SALDO — all income & expense (excl transfer) */
   const allInc      = txs.filter(t => t.type === 'income').reduce((a,t)=>a+t.amount,0);
@@ -2099,8 +2105,10 @@ function _sumData() {
 function renderSummary() {
   const d = _sumData();
 
-  /* Equity curve */
+  /* Equity curves */
   _drawEquityCurve(buildEquityCurve());
+  const cTextForNoInv = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a1a2e';
+  _drawEquityCurve(buildEquityCurveNoInv(), { canvasId: 'chart-equity-noinv', lineColor: cTextForNoInv, noInv: true });
 
   /* 3 Stat Cards */
   document.getElementById('sc-biz-inc').textContent = '+ ' + rp(d.bizInc);
@@ -2326,8 +2334,10 @@ function buildEquityCurve() {
     .map(([date, bal]) => ({ date, bal }));
 }
 
-function _drawEquityCurve(pts) {
-  const canvas = document.getElementById('chart-equity');
+function _drawEquityCurve(pts, opts) {
+  opts = opts || {};
+  const canvasId = opts.canvasId || 'chart-equity';
+  const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
   const W   = canvas.parentElement.clientWidth - 28;
@@ -2337,9 +2347,10 @@ function _drawEquityCurve(pts) {
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
-  const cs   = getComputedStyle(document.body);
-  const cPri = cs.getPropertyValue('--primary').trim() || '#5856d6';
-  const cTxt = cs.getPropertyValue('--text2').trim()   || '#6b7280';
+  const cs      = getComputedStyle(document.body);
+  const cPri    = cs.getPropertyValue('--primary').trim() || '#5856d6';
+  const cTxt    = cs.getPropertyValue('--text2').trim()   || '#6b7280';
+  const cLine   = opts.lineColor || cPri;
   if (pts.length < 2) {
     ctx.fillStyle = cTxt; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('Belum ada data', W/2, H/2); return;
@@ -2376,36 +2387,37 @@ function _drawEquityCurve(pts) {
 
   /* Gradient fill */
   const grad = ctx.createLinearGradient(0, padT, 0, padT + cH);
-  grad.addColorStop(0,   cPri + '55'); grad.addColorStop(0.7, cPri + '11'); grad.addColorStop(1, cPri + '00');
+  grad.addColorStop(0,   cLine + '55'); grad.addColorStop(0.7, cLine + '11'); grad.addColorStop(1, cLine + '00');
   ctx.beginPath(); drawSmooth(ctx);
   ctx.lineTo(xs[n-1], padT + cH); ctx.lineTo(xs[0], padT + cH); ctx.closePath();
   ctx.fillStyle = grad; ctx.fill();
 
-  /* Neon glow: 4 layers outer → inner */
+  /* Glow/stroke layers: outer → inner */
   [[9,'15'],[5,'35'],[2.5,'80'],[1.2,'ff']].forEach(([lw, alpha]) => {
     ctx.beginPath(); drawSmooth(ctx);
-    ctx.strokeStyle = cPri + alpha; ctx.lineWidth = lw; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.strokeStyle = cLine + alpha; ctx.lineWidth = lw; ctx.lineJoin='round'; ctx.lineCap='round';
     ctx.stroke();
   });
 
-  /* ATH dot + label */
+  /* ATH dot + label above the dot */
   const athX = xs[athIdx], athY = ys[athIdx];
   ctx.beginPath(); ctx.arc(athX, athY, 5, 0, Math.PI*2);
   ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
   const cTextMain = cs.getPropertyValue('--text').trim() || '#1a1a2e';
   ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = cTextMain; ctx.textAlign = 'center';
-  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), padT + 12);
+  const athLblY = Math.max(athY - 10, 10);
+  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), athLblY);
 
-  /* Neon runner at last point */
+  /* Runner dot at last point */
   const rx = xs[n-1], ry = ys[n-1];
   [[14,'18'],[9,'38'],[5,'70']].forEach(([r, alpha]) => {
     ctx.beginPath(); ctx.arc(rx, ry, r, 0, Math.PI*2);
-    ctx.fillStyle = cPri + alpha; ctx.fill();
+    ctx.fillStyle = cLine + alpha; ctx.fill();
   });
   ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI*2);
-  ctx.fillStyle = 'white'; ctx.shadowColor = cPri; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+  ctx.fillStyle = 'white'; ctx.shadowColor = cLine; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
   ctx.beginPath(); ctx.arc(rx, ry, 1.5, 0, Math.PI*2);
-  ctx.fillStyle = cPri; ctx.fill();
+  ctx.fillStyle = cLine; ctx.fill();
 
   /* Date labels (first & last) */
   ctx.fillStyle = cTxt; ctx.font = '9px sans-serif'; ctx.shadowBlur = 0;
@@ -2414,14 +2426,42 @@ function _drawEquityCurve(pts) {
   ctx.textAlign = 'right';
   if (pts[n-1].date) ctx.fillText(fmtShort(pts[n-1].date), xs[n-1], padT + cH + 14);
 
-  /* Store points and register click */
-  _eqPtsStored = pts.map((p, i) => ({ x: xs[i], y: ys[i], date: p.date, bal: p.bal }));
+  /* Click handler (local closure — no global pts needed) */
+  const storedPts = pts.map((p, i) => ({ x: xs[i], y: ys[i], date: p.date, bal: p.bal }));
+  if (!opts.noInv) _eqPtsStored = storedPts;
   _registerCanvasClick(canvas, (cx) => {
-    if (!_eqPtsStored.length) return;
-    let nearest = _eqPtsStored[0], minD = Infinity;
-    _eqPtsStored.forEach(p => { const d = Math.abs(p.x - cx); if (d < minD) { minD = d; nearest = p; } });
+    if (!storedPts.length) return;
+    let nearest = storedPts[0], minD = Infinity;
+    storedPts.forEach(p => { const d = Math.abs(p.x - cx); if (d < minD) { minD = d; nearest = p; } });
     _showChartTooltip(canvas, nearest.x, nearest.y, fmtDate(nearest.date) + '\n' + rp(nearest.bal));
   });
+}
+
+function buildEquityCurveNoInv() {
+  if (!S.transactions.length) return [];
+  const currentTotal = S.wallets.reduce((a, w) => a + (w.balance || 0), 0);
+  /* Current wallets already had investasi_ex deducted — add it back for "no-inv" view */
+  const invTotal = S.transactions
+    .filter(t => t.type === 'expense' && t.category === 'investasi_ex')
+    .reduce((a, t) => a + t.amount, 0);
+  const sorted = [...S.transactions].sort((a, b) =>
+    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
+  );
+  /* Net change excluding investasi_ex */
+  const totalNetNoInv = sorted
+    .filter(t => !(t.type === 'expense' && t.category === 'investasi_ex'))
+    .reduce((a, t) => a + (t.type === 'income' ? t.amount : -t.amount), 0);
+  let bal = (currentTotal + invTotal) - totalNetNoInv;
+  const dateMap = {};
+  sorted.forEach(t => {
+    if (t.type === 'expense' && t.category === 'investasi_ex') return;
+    bal += (t.type === 'income' ? t.amount : -t.amount);
+    dateMap[t.date || ''] = bal;
+  });
+  return Object.entries(dateMap)
+    .filter(([d]) => d)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, bal]) => ({ date, bal }));
 }
 
 /* ════════════════════════════
@@ -2446,15 +2486,15 @@ function generateSummary(d) {
   L.push('  Keuntungan Bisnis : '+(d.bizNet>=0?'+ ':'- ')+rp(Math.abs(d.bizNet)));
   L.push('');
   L.push('▸ PRIBADI');
-  L.push('  Pemasukan Pribadi : + '+rp(d.prvInc));
+  L.push('  Pemasukan Pribadi  : + '+rp(d.prvInc));
   L.push('  Pengeluaran Pribadi: - '+rp(d.prvExp));
-  L.push('  Alihkan ke Investasi: '+rp(d.prvInv));
-  L.push('  Sisa Pribadi      : '+(d.prvNet>=0?'+ ':'- ')+rp(Math.abs(d.prvNet)));
+  L.push('  Sisa Pribadi       : '+(d.prvNet>=0?'+ ':'- ')+rp(Math.abs(d.prvNet)));
   L.push('');
   L.push('▸ SALDO (semua dompet)');
-  L.push('  Total Pemasukan  : + '+rp(d.allInc));
-  L.push('  Total Pengeluaran: - '+rp(d.allExp));
-  L.push('  Sisa Saldo       : '+(d.sisaSaldo>=0?'+ ':'- ')+rp(Math.abs(d.sisaSaldo)));
+  L.push('  Total Pemasukan    : + '+rp(d.allInc));
+  L.push('  Total Pengeluaran  : - '+rp(d.allExpNoInv));
+  L.push('  Alihkan ke Investasi: '+rp(d.allInv));
+  L.push('  Sisa Saldo         : '+(d.sisaSaldo>=0?'+ ':'- ')+rp(Math.abs(d.sisaSaldo)));
   L.push('  Saldo Aktual     : '+rp(d.saldo));
   L.push('  Transaksi        : '+S.transactions.filter(t=>t.tipe!=='transfer'&&t.category!=='tfr_in'&&t.category!=='tfr_out').length);
   L.push('');
