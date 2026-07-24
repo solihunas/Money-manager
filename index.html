@@ -237,6 +237,25 @@
       cursor:pointer; line-height:1; padding:2px;
     }
 
+    /* Swipe-to-reveal for history rows */
+    .tx-swipe-outer { position:relative; overflow:hidden; }
+    .tx-sw-acts {
+      position:absolute; left:0; top:0; height:100%; width:112px;
+      display:flex; align-items:stretch;
+    }
+    .tx-sw-btn {
+      flex:1; border:none; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:3px; font-size:10px; font-weight:800; color:#fff; padding:0; line-height:1.2;
+    }
+    .tx-sw-edit { background:var(--primary); }
+    .tx-sw-del  { background:var(--red); }
+    .tx-sw-btn span { font-size:18px; line-height:1; }
+    .tx-swipeable {
+      background:var(--card); transform:translateX(0);
+      transition:transform .25s ease; will-change:transform;
+    }
+
     /* Empty state */
     .empty { text-align:center; padding:44px 24px; }
     .empty .ei { font-size:52px; margin-bottom:14px; }
@@ -909,6 +928,12 @@
         <canvas id="chart-equity-noinv" class="sum-chart-canvas" height="160"></canvas>
       </div>
 
+      <!-- Equity Curve — Bisnis -->
+      <div class="sum-section">
+        <div class="sum-sec-ttl">Kurva Bisnis <span style="font-size:11px;font-weight:600;color:var(--text3)">(pemasukan &amp; pengeluaran bisnis)</span></div>
+        <canvas id="chart-equity-biz" class="sum-chart-canvas" height="160"></canvas>
+      </div>
+
       <!-- Tren Cash Flow -->
       <div class="sum-section">
         <div class="sum-sec-ttl">Tren Cash Flow</div>
@@ -948,13 +973,21 @@
         <div id="sum-analytics"></div>
       </div>
 
-      <!-- Divider ke teks -->
-      <div class="sum-divider"><span>📋 Teks Rangkuman</span></div>
+      <!-- Divider ke teks total -->
+      <div class="sum-divider"><span>📋 Teks Rangkuman Total</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
         <p style="font-size:12px;color:var(--text2);flex:1">Siap salin &amp; kirim ke AI untuk analisis mendalam.</p>
         <button class="btn btn-pri btn-sm" style="width:auto;flex-shrink:0" onclick="copySummary()">📋 Salin</button>
       </div>
       <div class="sum-text-box" id="summary-content"></div>
+
+      <!-- Divider ke teks bisnis -->
+      <div class="sum-divider" style="margin-top:16px"><span>📊 Teks Rangkuman Bisnis</span></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <p style="font-size:12px;color:var(--text2);flex:1">Rangkuman khusus transaksi bisnis.</p>
+        <button class="btn btn-pri btn-sm" style="width:auto;flex-shrink:0" onclick="copyBizSummary()">📋 Salin</button>
+      </div>
+      <div class="sum-text-box" id="biz-summary-content"></div>
     </div>
     <div class="spacer"></div>
   </div>
@@ -1809,23 +1842,26 @@ function drawHistList() {
          const inc = t.type==='income';
          const bg  = inc ? 'rgba(22,163,74,.1)' : 'rgba(220,38,38,.1)';
          const timeLbl = t.time ? ' · ' + t.time : '';
-         return `<div class="tx-item" onclick="openTxDetail('${t.id}')" style="cursor:pointer">
-           <div class="tx-ico" style="background:${bg}">${c.ic}</div>
-           <div class="tx-info">
-             <div class="tx-name">${esc(txDisplayName(t))}${tipeBadge(t)}</div>
-             <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${esc(txCatLabel(t))}${timeLbl}</div>
+         return `<div class="tx-swipe-outer">
+           <div class="tx-sw-acts">
+             <button class="tx-sw-btn tx-sw-edit" onclick="openEditTx('${t.id}',event)"><span>✏️</span>Edit</button>
+             <button class="tx-sw-btn tx-sw-del" onclick="delTxHistBtn('${t.id}',event)"><span>🗑️</span>Hapus</button>
            </div>
-           <div class="tx-right">
-             <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+ ':'- '}${rp(t.amount)}</div>
-             <div style="display:flex;align-items:center;gap:2px">
-               <button class="pencil-btn" onclick="openEditTx('${t.id}',event)" title="Edit">✏️</button>
-               <button class="del-btn" onclick="delTxHistBtn('${t.id}',event)">×</button>
+           <div class="tx-item tx-swipeable" data-txid="${t.id}" onclick="openTxDetailSafe('${t.id}')" style="cursor:pointer">
+             <div class="tx-ico" style="background:${bg}">${c.ic}</div>
+             <div class="tx-info">
+               <div class="tx-name">${esc(txDisplayName(t))}${tipeBadge(t)}</div>
+               <div class="tx-meta"><span style="font-weight:800;color:var(--text)">${esc(w?.name||'–')}</span> · ${esc(txCatLabel(t))}${timeLbl}</div>
+             </div>
+             <div class="tx-right">
+               <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+ ':'- '}${rp(t.amount)}</div>
              </div>
            </div>
          </div>`;
        }).join('')}
      </div>`
   ).join('');
+  _initHistSwipe();
 }
 
 function delTxHist(id) {
@@ -1840,6 +1876,82 @@ function delTxHist(id) {
 }
 
 function delTxHistBtn(id, e) { if (e) e.stopPropagation(); delTxHist(id); }
+
+function openTxDetailSafe(id) {
+  const el = document.querySelector(`.tx-swipeable[data-txid="${id}"]`);
+  if (el && el.classList.contains('sw-open')) {
+    el.style.transform = ''; el.classList.remove('sw-open'); return;
+  }
+  openTxDetail(id);
+}
+
+let _histSwipeBound = false;
+function _initHistSwipe() {
+  document.querySelectorAll('.tx-swipeable').forEach(el => {
+    let t0x = 0, t0y = 0, dragging = false, ltTimer = null;
+
+    const closeOthers = () => {
+      document.querySelectorAll('.tx-swipeable.sw-open').forEach(o => {
+        if (o !== el) { o.style.transform = ''; o.classList.remove('sw-open'); }
+      });
+    };
+    const revealEl = (show) => {
+      el.style.transition = 'transform .25s ease';
+      el.style.transform = show ? 'translateX(112px)' : '';
+      show ? el.classList.add('sw-open') : el.classList.remove('sw-open');
+      if (show) closeOthers();
+    };
+
+    el.addEventListener('touchstart', e => {
+      t0x = e.touches[0].clientX; t0y = e.touches[0].clientY;
+      dragging = false;
+      ltTimer = setTimeout(() => { revealEl(true); ltTimer = null; }, 550);
+    }, { passive: true });
+
+    el.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - t0x;
+      const dy = Math.abs(e.touches[0].clientY - t0y);
+      if (!dragging && Math.abs(dx) > 8 && Math.abs(dx) > dy) {
+        dragging = true;
+        if (ltTimer) { clearTimeout(ltTimer); ltTimer = null; }
+      }
+      if (dragging) {
+        e.preventDefault();
+        el.style.transition = 'none';
+        el.style.transform = `translateX(${Math.max(0, Math.min(dx, 130))}px)`;
+      } else if (dy > 8 && ltTimer) {
+        clearTimeout(ltTimer); ltTimer = null;
+      }
+    }, { passive: false });
+
+    el.addEventListener('touchend', e => {
+      if (ltTimer) { clearTimeout(ltTimer); ltTimer = null; }
+      if (dragging) {
+        const dx = e.changedTouches[0].clientX - t0x;
+        revealEl(dx > 55);
+        dragging = false;
+      }
+    });
+
+    /* Desktop long-press */
+    el.addEventListener('mousedown', () => {
+      ltTimer = setTimeout(() => { revealEl(true); ltTimer = null; }, 600);
+    });
+    el.addEventListener('mouseup',    () => { if (ltTimer) { clearTimeout(ltTimer); ltTimer = null; } });
+    el.addEventListener('mouseleave', () => { if (ltTimer) { clearTimeout(ltTimer); ltTimer = null; } });
+  });
+
+  if (!_histSwipeBound) {
+    _histSwipeBound = true;
+    document.addEventListener('touchstart', e => {
+      if (!e.target.closest('.tx-swipeable') && !e.target.closest('.tx-sw-acts')) {
+        document.querySelectorAll('.tx-swipeable.sw-open').forEach(o => {
+          o.style.transform = ''; o.classList.remove('sw-open');
+        });
+      }
+    }, { passive: true });
+  }
+}
 
 function openEditTx(id, e) {
   if (e) e.stopPropagation();
@@ -2109,6 +2221,7 @@ function renderSummary() {
   _drawEquityCurve(buildEquityCurve());
   const cTextForNoInv = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a1a2e';
   _drawEquityCurve(buildEquityCurveNoInv(), { canvasId: 'chart-equity-noinv', lineColor: cTextForNoInv, noInv: true });
+  _drawEquityCurve(buildEquityCurveBiz(), { canvasId: 'chart-equity-biz', lineColor: '#f59e0b', noInv: true });
 
   /* 3 Stat Cards */
   document.getElementById('sc-biz-inc').textContent = '+ ' + rp(d.bizInc);
@@ -2193,8 +2306,9 @@ function renderSummary() {
       `<div class="sc-row"><span class="sc-lbl">Rasio Pengeluaran</span><span class="sc-val" style="color:${expRatio>80?'var(--exp)':expRatio>60?'var(--yellow)':'var(--text)'}">${expRatio.toFixed(1)}%</span></div>`;
   }
 
-  /* Text summary */
+  /* Text summaries */
   document.getElementById('summary-content').textContent = generateSummary(d);
+  document.getElementById('biz-summary-content').textContent = generateBizSummary(d);
 }
 
 function _registerCanvasClick(canvas, handler) {
@@ -2542,6 +2656,86 @@ function copySummary() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text)
       .then(() => toast('Rangkuman berhasil disalin ✓'))
+      .catch(() => toast('Gagal menyalin','err'));
+  } else {
+    toast('Browser tidak mendukung salin otomatis','err');
+  }
+}
+
+/* ════════════════════════════
+   RANGKUMAN BISNIS
+════════════════════════════ */
+function buildEquityCurveBiz() {
+  const bizTxs = S.transactions.filter(t => t.tipe === 'bisnis');
+  if (bizTxs.length < 2) return [];
+  const sorted = [...bizTxs].sort((a, b) =>
+    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
+  );
+  let bal = 0;
+  const dateMap = {};
+  sorted.forEach(t => {
+    bal += (t.type === 'income' ? t.amount : -t.amount);
+    dateMap[t.date || ''] = bal;
+  });
+  return Object.entries(dateMap)
+    .filter(([d]) => d)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, bal]) => ({ date, bal }));
+}
+
+function generateBizSummary(d) {
+  d = d || _sumData();
+  const now = new Date();
+  const MON = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const dateStr = now.getDate()+' '+MON[now.getMonth()]+' '+now.getFullYear()+' '+
+    now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+
+  const L = [];
+  L.push('═══════════════════════════════');
+  L.push('  RANGKUMAN BISNIS — KASKU');
+  L.push('  '+dateStr);
+  L.push('═══════════════════════════════');
+  L.push('');
+  L.push('  Pemasukan Bisnis  : + '+rp(d.bizInc));
+  L.push('  Pengeluaran Bisnis: - '+rp(d.bizExp));
+  L.push('  Keuntungan Bisnis : '+(d.bizNet>=0?'+ ':'- ')+rp(Math.abs(d.bizNet)));
+  if (d.bizMargin !== null) {
+    L.push('  Margin            : '+(d.bizMargin>=0?'+':'')+d.bizMargin.toFixed(1)+'%');
+  }
+  L.push('');
+
+  S.wallets.forEach(w => {
+    const wTxs = S.transactions
+      .filter(t => t.walletId === w.id && t.tipe === 'bisnis')
+      .sort((a,b) => ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+    if (!wTxs.length) return;
+    let wInc = 0, wExp = 0;
+    L.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    L.push('▌ '+w.name);
+    L.push('');
+    wTxs.forEach(t => {
+      const inc = t.type === 'income';
+      const noteStr = t.note ? ' | '+t.note : '';
+      L.push('  '+(t.date||'?')+' '+(t.time||''));
+      L.push('  '+(inc?'[+]':'[-]')+' '+txCatLabel(t)+noteStr);
+      L.push('  '+(inc?'+ ':'- ')+rp(t.amount));
+      L.push('');
+      if (inc) wInc += t.amount; else wExp += t.amount;
+    });
+    L.push('  Masuk : + '+rp(wInc));
+    L.push('  Keluar: - '+rp(wExp));
+    L.push('  Net   : '+(wInc-wExp>=0?'+ ':'- ')+rp(Math.abs(wInc-wExp)));
+    L.push('');
+  });
+
+  return L.join('\n');
+}
+
+function copyBizSummary() {
+  const text = generateBizSummary();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => toast('Rangkuman bisnis berhasil disalin ✓'))
       .catch(() => toast('Gagal menyalin','err'));
   } else {
     toast('Browser tidak mendukung salin otomatis','err');
