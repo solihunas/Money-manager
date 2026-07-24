@@ -44,6 +44,10 @@
     body.t-red { --primary:#9f1239; --pri2:#be123c; --pri-lt:#ffe4e6; --bg:#fff1f2; --sh:0 2px 12px rgba(159,18,57,.08); --g1:#4c0519; --g2:#9f1239; --g3:#be123c; }
     /* ── Tema: Teal ── */
     body.t-teal { --primary:#0f766e; --pri2:#0d9488; --pri-lt:#ccfbf1; --bg:#f0fdfa; --sh:0 2px 12px rgba(15,118,110,.08); --g1:#134e4a; --g2:#0f766e; --g3:#0d9488; }
+    /* ── Tema: Salju ✨ ── */
+    body.t-snow { --bg:#fdf4ff; --card:#ffffff; --primary:#c026d3; --pri2:#d946ef; --pri-lt:#fae8ff; --text:#701a75; --text2:#a21caf; --text3:#e879f9; --green:#059669; --green-lt:#d1fae5; --red:#e11d48; --red-lt:#ffe4e6; --yellow:#d97706; --border:#f5d0fe; --nav-h:62px; --inc:#7c3aed; --exp:#e11d48; --g1:#86198f; --g2:#c026d3; --g3:#d946ef; --sh:0 2px 16px rgba(192,38,211,.15); }
+    body.t-snow .nb-head,body.t-snow .hist-head { background:linear-gradient(to bottom,#fdf4ff,#fefcff); }
+    body.t-snow .bot-nav { background:linear-gradient(to top,#fdf4ff,#ffffff); }
     html, body { height:100%; overflow:hidden; background:var(--card); }
     body {
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
@@ -644,6 +648,75 @@
     }
     .tp-overlay.open { display:block; }
 
+    /* ── History search ── */
+    .hist-search-wrap {
+      display:flex; align-items:center; gap:8px;
+      background:var(--bg); border:1.5px solid var(--border); border-radius:20px;
+      padding:6px 14px; margin-bottom:8px;
+    }
+    .hist-search-wrap input {
+      border:none; background:none; flex:1; font-size:13px;
+      color:var(--text); outline:none; font-weight:600; min-width:0;
+    }
+    .hist-search-wrap input::placeholder { color:var(--text3); font-weight:400; }
+    .hist-search-wrap .hs-ico { font-size:15px; flex-shrink:0; opacity:.55; }
+    /* Period row separator variant */
+    .filt-row.period-row { border-top:1px solid var(--border); padding-top:8px; }
+
+    /* ── PIN Screen ── */
+    #pin-screen {
+      position:fixed; inset:0; z-index:1000;
+      background:var(--bg); display:flex; flex-direction:column;
+      align-items:center; justify-content:center; padding:24px;
+      max-width:480px; margin:0 auto;
+    }
+    #pin-screen.hidden { display:none; }
+    .pin-logo { font-size:52px; margin-bottom:4px; }
+    .pin-app-name { font-size:24px; font-weight:900; color:var(--primary); margin-bottom:4px; letter-spacing:-.5px; }
+    .pin-label { font-size:13px; font-weight:500; color:var(--text2); margin-bottom:28px; text-align:center; line-height:1.5; max-width:260px; }
+    .pin-dots { display:flex; gap:16px; margin-bottom:30px; }
+    .pin-dot {
+      width:18px; height:18px; border-radius:50%;
+      border:2.5px solid var(--primary); background:transparent; transition:all .15s;
+    }
+    .pin-dot.filled { background:var(--primary); transform:scale(1.12); }
+    .pin-dots.shake { animation:pinShake .4s ease; }
+    .pin-pad {
+      display:grid; grid-template-columns:repeat(3, 72px);
+      gap:12px; justify-content:center;
+    }
+    .pin-key {
+      width:72px; height:72px; border-radius:50%;
+      border:none; background:var(--card); box-shadow:var(--sh);
+      font-size:22px; font-weight:700; cursor:pointer; color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+      transition:transform .1s, background .15s; -webkit-tap-highlight-color:transparent;
+    }
+    .pin-key:active { transform:scale(.9); background:var(--pri-lt); }
+    .pin-key.pin-del { font-size:20px; }
+    .pin-key.pin-empty { background:none; box-shadow:none; pointer-events:none; }
+    .pin-err { font-size:13px; color:var(--red); font-weight:700; margin-top:14px; min-height:18px; text-align:center; }
+    .pin-cancel-btn { margin-top:16px; font-size:13px; color:var(--text2); font-weight:600; cursor:pointer; padding:8px 24px; border:none; background:none; }
+    @keyframes pinShake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-10px)}
+      40%{transform:translateX(10px)}
+      60%{transform:translateX(-7px)}
+      80%{transform:translateX(7px)}
+    }
+    /* ── Snow canvas ── */
+    #snow-canvas { position:fixed; inset:0; pointer-events:none; z-index:999; display:none; }
+    /* ── PIN toggle in profile ── */
+    .pin-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0 4px; border-top:1px solid var(--border); margin-top:8px; }
+    .pin-toggle-lbl { font-size:14px; font-weight:700; color:var(--text); }
+    .pin-toggle-sub { font-size:11px; color:var(--text2); margin-top:2px; }
+    .sw-toggle { position:relative; width:46px; height:26px; flex-shrink:0; }
+    .sw-toggle input { opacity:0; width:0; height:0; position:absolute; }
+    .sw-slider { position:absolute; inset:0; border-radius:26px; background:var(--border); transition:.25s; cursor:pointer; }
+    .sw-slider:before { content:''; position:absolute; width:20px; height:20px; left:3px; bottom:3px; border-radius:50%; background:white; transition:.25s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+    .sw-toggle input:checked + .sw-slider { background:var(--primary); }
+    .sw-toggle input:checked + .sw-slider:before { transform:translateX(20px); }
+
     @media (max-width:360px) {
       .cat-grid { grid-template-columns:repeat(3,1fr); }
       .ico-grid { grid-template-columns:repeat(4,1fr); }
@@ -652,6 +725,25 @@
   </style>
 </head>
 <body>
+
+<!-- ═══ SNOW CANVAS ═══ -->
+<canvas id="snow-canvas"></canvas>
+
+<!-- ═══ PIN SCREEN ═══ -->
+<div id="pin-screen" class="hidden">
+  <div class="pin-logo">💰</div>
+  <div class="pin-app-name">KasKu</div>
+  <div class="pin-label" id="pin-label">Masukkan PIN untuk membuka KasKu</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad" id="pin-pad"></div>
+  <div class="pin-err" id="pin-err"></div>
+  <button class="pin-cancel-btn" id="pin-cancel-btn" onclick="_pinCancel()">Batal</button>
+</div>
 
 <div id="app">
 
@@ -832,7 +924,12 @@
   <div id="sc-history" class="screen padnav">
     <div class="hist-head">
       <h2>Riwayat Transaksi</h2>
+      <div class="hist-search-wrap">
+        <span class="hs-ico">🔍</span>
+        <input type="text" id="hist-search-inp" placeholder="Cari transaksi..." oninput="onHistSearch(this.value)">
+      </div>
       <div class="filt-row" id="hist-chips"></div>
+      <div class="filt-row period-row" id="hist-period-chips"></div>
     </div>
     <div id="hist-list"></div>
     <div class="spacer"></div>
@@ -860,6 +957,7 @@
   <div id="sc-summary" class="screen padnav">
     <div class="nb-head">
       <h2>Rangkuman</h2>
+      <div class="filt-row" id="sum-period-chips" style="padding:0 18px 12px"></div>
     </div>
     <div class="sum-wrap">
       <!-- Bagian A: Statistik — 3 Kartu -->
@@ -1080,6 +1178,16 @@
     <div class="sh-body">
       <div class="fg"><label class="fl">Nama Pemilik</label><input type="text" class="fi" id="pf-name" placeholder="Masukkan nama Anda..."></div>
       <button class="btn btn-pri" onclick="saveProfile()">Simpan</button>
+      <div class="pin-toggle-row">
+        <div>
+          <div class="pin-toggle-lbl">🔒 Kunci PIN</div>
+          <div class="pin-toggle-sub" id="pf-pin-sub">Nonaktif</div>
+        </div>
+        <label class="sw-toggle">
+          <input type="checkbox" id="pf-pin-chk" onchange="togglePin(this.checked)">
+          <div class="sw-slider"></div>
+        </label>
+      </div>
     </div>
   </div>
 </div>
@@ -1138,7 +1246,7 @@
 const KEY = 'kasku_v2';
 
 function freshState() {
-  return { profile:{ name:'Nama Pemilik' }, wallets:[], transactions:[], notes:[], bills:[], hidden:false };
+  return { profile:{ name:'Nama Pemilik' }, wallets:[], transactions:[], notes:[], bills:[], hidden:false, pin:null };
 }
 
 function loadState() {
@@ -1273,6 +1381,9 @@ let _editTxId    = null;
 let _detailTxId  = null;
 let _eqPtsStored = [];
 let _trendBarsStored = [];
+let _histPeriod  = 'all';
+let _histSearch  = '';
+let _sumPeriod   = 'all';
 
 const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history', 'sc-notes':'nb-catatan', 'sc-summary':'nb-rangkuman' };
 const NO_NAV = ['sc-wallet-form','sc-wallet-detail','sc-add-tx'];
@@ -1791,6 +1902,52 @@ function delTx(id, e) {
 /* ════════════════════════════
    RIWAYAT
 ════════════════════════════ */
+const PERIOD_OPTS = [
+  { id:'all',        lbl:'Semua' },
+  { id:'week',       lbl:'Minggu Ini' },
+  { id:'month',      lbl:'Bulan Ini' },
+  { id:'last_month', lbl:'Bulan Lalu' },
+  { id:'year',       lbl:'Tahun Ini' },
+];
+
+function _periodRange(period) {
+  if (!period || period === 'all') return null;
+  const now = new Date();
+  const y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+  if (period === 'week') {
+    const dow = now.getDay();
+    const mon = new Date(y, mo, d - (dow === 0 ? 6 : dow - 1));
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    return { from: mon.toISOString().slice(0,10), to: sun.toISOString().slice(0,10) };
+  }
+  if (period === 'month') {
+    return {
+      from: `${y}-${String(mo+1).padStart(2,'0')}-01`,
+      to:   `${y}-${String(mo+1).padStart(2,'0')}-${String(new Date(y,mo+1,0).getDate()).padStart(2,'0')}`
+    };
+  }
+  if (period === 'last_month') {
+    const pm = mo === 0 ? 11 : mo - 1;
+    const py = mo === 0 ? y - 1 : y;
+    return {
+      from: `${py}-${String(pm+1).padStart(2,'0')}-01`,
+      to:   `${py}-${String(pm+1).padStart(2,'0')}-${String(new Date(py,pm+1,0).getDate()).padStart(2,'0')}`
+    };
+  }
+  if (period === 'year') {
+    return { from: `${y}-01-01`, to: `${y}-12-31` };
+  }
+  return null;
+}
+
+function _buildPeriodChips(containerId, cur, fn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = PERIOD_OPTS.map(p =>
+    `<button class="chip${cur===p.id?' active':''}" onclick="${fn}('${p.id}',this)">${p.lbl}</button>`
+  ).join('');
+}
+
 function renderHistory() {
   _histTypeF = 'all'; _histWalF = '';
   const chips = document.getElementById('hist-chips');
@@ -1801,6 +1958,9 @@ function renderHistory() {
     S.wallets.map(w =>
       `<button class="chip" onclick="setHistWal('${w.id}',this)">${esc(w.name)}</button>`
     ).join('');
+  _buildPeriodChips('hist-period-chips', _histPeriod, 'setHistPeriod');
+  const inp = document.getElementById('hist-search-inp');
+  if (inp) inp.value = _histSearch;
   drawHistList();
 }
 
@@ -1814,12 +1974,33 @@ function setHistWal(id, el) {
   document.querySelectorAll('#hist-chips .chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active'); drawHistList();
 }
+function setHistPeriod(p, el) {
+  _histPeriod = p;
+  document.querySelectorAll('#hist-period-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active'); drawHistList();
+}
+function onHistSearch(val) {
+  _histSearch = val.toLowerCase();
+  drawHistList();
+}
 
 function drawHistList() {
   let list = [...S.transactions];
   if (_histTypeF==='income')  list = list.filter(t => t.type==='income');
   if (_histTypeF==='expense') list = list.filter(t => t.type==='expense');
   if (_histWalF)               list = list.filter(t => t.walletId===_histWalF);
+  const _hRange = _periodRange(_histPeriod);
+  if (_hRange) list = list.filter(t => t.date && t.date >= _hRange.from && t.date <= _hRange.to);
+  if (_histSearch) {
+    const q = _histSearch;
+    list = list.filter(t => {
+      const name = txDisplayName(t).toLowerCase();
+      const cat  = txCatLabel(t).toLowerCase();
+      const note = (t.note||'').toLowerCase();
+      const amt  = String(t.amount||'');
+      return name.includes(q) || cat.includes(q) || note.includes(q) || amt.includes(q);
+    });
+  }
   list.sort((a,b) => {
     const da = (a.date||'') + (a.time||'');
     const db = (b.date||'') + (b.time||'');
@@ -2133,7 +2314,9 @@ function delBill(id) {
 ════════════════════════════ */
 function _sumData() {
   /* Exclude pure transfer transactions from all stats */
-  const txs = S.transactions.filter(t => t.tipe !== 'transfer' && t.category !== 'tfr_in' && t.category !== 'tfr_out');
+  const allTxs = S.transactions.filter(t => t.tipe !== 'transfer' && t.category !== 'tfr_in' && t.category !== 'tfr_out');
+  const _sRange = _periodRange(_sumPeriod);
+  const txs = _sRange ? allTxs.filter(t => t.date && t.date >= _sRange.from && t.date <= _sRange.to) : allTxs;
 
   /* BISNIS */
   const bizTx  = txs.filter(t => t.tipe === 'bisnis');
@@ -2158,13 +2341,13 @@ function _sumData() {
 
   const bizMargin = bizInc > 0 ? (bizNet / bizInc * 100) : null;
 
-  /* Weekly trend — last 8 periods (with per-segment breakdown) */
+  /* Weekly trend — last 8 periods, always uses all transactions regardless of period filter */
   const weeks = [];
   const now = new Date();
   for (let i = 7; i >= 0; i--) {
     const end   = new Date(now); end.setDate(now.getDate() - i * 7); end.setHours(23,59,59);
     const start = new Date(end); start.setDate(end.getDate() - 6);   start.setHours(0,0,0);
-    const wt    = txs.filter(t => { if (!t.date) return false; const d = new Date(t.date+'T12:00:00'); return d >= start && d <= end; });
+    const wt    = allTxs.filter(t => { if (!t.date) return false; const d = new Date(t.date+'T12:00:00'); return d >= start && d <= end; });
     const lbl   = (start.getDate())+'/'+(start.getMonth()+1);
     const bizWk = wt.filter(t => t.tipe === 'bisnis');
     const prvWk = wt.filter(t => t.tipe === 'pribadi' || !t.tipe);
@@ -2214,7 +2397,15 @@ function _sumData() {
 /* ════════════════════════════
    RANGKUMAN — render
 ════════════════════════════ */
+function setSumPeriod(p, el) {
+  _sumPeriod = p;
+  document.querySelectorAll('#sum-period-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSummary();
+}
+
 function renderSummary() {
+  _buildPeriodChips('sum-period-chips', _sumPeriod, 'setSumPeriod');
   const d = _sumData();
 
   /* Equity curves */
@@ -2747,6 +2938,10 @@ function copyBizSummary() {
 ════════════════════════════ */
 function openProfile() {
   document.getElementById('pf-name').value = S.profile.name;
+  const pinChk = document.getElementById('pf-pin-chk');
+  const pinSub = document.getElementById('pf-pin-sub');
+  if (pinChk) pinChk.checked = !!S.pin;
+  if (pinSub) pinSub.textContent = S.pin ? 'Aktif' : 'Nonaktif';
   openOv('ov-profile');
 }
 function saveProfile() {
@@ -2755,6 +2950,131 @@ function saveProfile() {
   S.profile.name = name; save(); closeOv('ov-profile');
   document.getElementById('hm-name').textContent = name;
   toast('Profil diperbarui ✓');
+}
+function togglePin(enabled) {
+  if (enabled) {
+    document.getElementById('pf-pin-chk').checked = false;
+    closeOv('ov-profile');
+    _showPinScreen('setup1', () => {
+      const pinChk = document.getElementById('pf-pin-chk');
+      const pinSub = document.getElementById('pf-pin-sub');
+      if (pinChk) pinChk.checked = true;
+      if (pinSub) pinSub.textContent = 'Aktif';
+      toast('PIN berhasil diaktifkan ✓');
+      openOv('ov-profile');
+    });
+  } else {
+    if (!S.pin) return;
+    document.getElementById('pf-pin-chk').checked = true;
+    closeOv('ov-profile');
+    _showPinScreen('verify_off', () => {
+      S.pin = null; save();
+      const pinChk = document.getElementById('pf-pin-chk');
+      const pinSub = document.getElementById('pf-pin-sub');
+      if (pinChk) pinChk.checked = false;
+      if (pinSub) pinSub.textContent = 'Nonaktif';
+      toast('PIN dinonaktifkan');
+      openOv('ov-profile');
+    });
+  }
+}
+
+/* ════════════════════════════
+   PIN LOCK
+════════════════════════════ */
+let _pinMode  = null;
+let _pinBuffer = '';
+let _pinFirst  = '';
+let _pinCb     = null;
+
+function _showPinScreen(mode, cb) {
+  _pinMode = mode; _pinBuffer = ''; _pinFirst = ''; _pinCb = cb || null;
+  const labels = {
+    unlock:     'Masukkan PIN untuk membuka KasKu',
+    setup1:     'Buat PIN baru (4 digit)',
+    setup2:     'Konfirmasi PIN baru',
+    verify_off: 'Masukkan PIN untuk menonaktifkan kunci',
+  };
+  document.getElementById('pin-label').textContent = labels[mode] || 'Masukkan PIN';
+  document.getElementById('pin-err').textContent = '';
+  const cancelBtn = document.getElementById('pin-cancel-btn');
+  if (cancelBtn) cancelBtn.style.display = (mode === 'unlock') ? 'none' : '';
+  _renderPinPad();
+  _renderPinDots();
+  document.getElementById('pin-screen').classList.remove('hidden');
+}
+
+function _hidePinScreen() {
+  document.getElementById('pin-screen').classList.add('hidden');
+  _pinBuffer = ''; _pinFirst = ''; _pinMode = null; _pinCb = null;
+}
+
+function _renderPinDots() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('pd' + i);
+    if (el) el.classList.toggle('filled', i < _pinBuffer.length);
+  }
+}
+
+function _renderPinPad() {
+  const pad = document.getElementById('pin-pad');
+  if (!pad) return;
+  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  pad.innerHTML = keys.map(k => {
+    if (k === '') return `<button class="pin-key pin-empty" aria-hidden="true"></button>`;
+    if (k === '⌫') return `<button class="pin-key pin-del" onclick="_pinTap('⌫')">⌫</button>`;
+    return `<button class="pin-key" onclick="_pinTap('${k}')">${k}</button>`;
+  }).join('');
+}
+
+function _pinTap(k) {
+  document.getElementById('pin-err').textContent = '';
+  if (k === '⌫') { _pinBuffer = _pinBuffer.slice(0,-1); _renderPinDots(); return; }
+  if (_pinBuffer.length >= 4) return;
+  _pinBuffer += k;
+  _renderPinDots();
+  if (_pinBuffer.length === 4) setTimeout(_pinSubmit, 150);
+}
+
+function _pinSubmit() {
+  if (_pinMode === 'unlock') {
+    if (_pinBuffer === S.pin) { _hidePinScreen(); }
+    else { _pinShake(); document.getElementById('pin-err').textContent = 'PIN salah. Coba lagi.'; _pinBuffer = ''; _renderPinDots(); }
+  } else if (_pinMode === 'setup1') {
+    _pinFirst = _pinBuffer; _pinBuffer = ''; _pinMode = 'setup2';
+    document.getElementById('pin-label').textContent = 'Konfirmasi PIN baru';
+    document.getElementById('pin-err').textContent = '';
+    _renderPinDots();
+  } else if (_pinMode === 'setup2') {
+    if (_pinBuffer === _pinFirst) {
+      S.pin = _pinBuffer; save();
+      _hidePinScreen();
+      if (_pinCb) { const f = _pinCb; _pinCb = null; f(); }
+    } else {
+      _pinShake();
+      document.getElementById('pin-err').textContent = 'PIN tidak cocok. Ulangi dari awal.';
+      _pinBuffer = ''; _pinFirst = ''; _pinMode = 'setup1';
+      document.getElementById('pin-label').textContent = 'Buat PIN baru (4 digit)';
+      _renderPinDots();
+    }
+  } else if (_pinMode === 'verify_off') {
+    if (_pinBuffer === S.pin) { _hidePinScreen(); if (_pinCb) { const f = _pinCb; _pinCb = null; f(); } }
+    else { _pinShake(); document.getElementById('pin-err').textContent = 'PIN salah. Coba lagi.'; _pinBuffer = ''; _renderPinDots(); }
+  }
+}
+
+function _pinShake() {
+  const dots = document.getElementById('pin-dots');
+  if (!dots) return;
+  dots.classList.remove('shake');
+  void dots.offsetWidth;
+  dots.classList.add('shake');
+  setTimeout(() => dots.classList.remove('shake'), 500);
+}
+
+function _pinCancel() {
+  _hidePinScreen();
+  openOv('ov-profile');
 }
 
 /* ════════════════════════════
@@ -2800,16 +3120,78 @@ function toast(msg, type) {
 }
 
 /* ════════════════════════════
+   SNOW PARTICLES
+════════════════════════════ */
+let _snowRaf    = null;
+let _snowFlakes = [];
+
+function _startSnow() {
+  const canvas = document.getElementById('snow-canvas');
+  if (!canvas) return;
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  const COLS = ['#ffffff','#f5d0fe','#e879f9','#fae8ff','#d8b4fe','#fbcfe8'];
+  _snowFlakes = Array.from({length: 60}, () => ({
+    x:     Math.random() * canvas.width,
+    y:     Math.random() * canvas.height,
+    r:     Math.random() * 2.8 + 1.2,
+    vx:    (Math.random() - 0.5) * 0.7,
+    vy:    Math.random() * 1.1 + 0.45,
+    alpha: Math.random() * 0.55 + 0.45,
+    color: COLS[Math.floor(Math.random() * COLS.length)],
+    glow:  Math.random() * 10 + 4,
+  }));
+  if (_snowRaf) cancelAnimationFrame(_snowRaf);
+  _animSnow();
+}
+
+function _stopSnow() {
+  if (_snowRaf) { cancelAnimationFrame(_snowRaf); _snowRaf = null; }
+  const canvas = document.getElementById('snow-canvas');
+  if (canvas) {
+    canvas.style.display = 'none';
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function _animSnow() {
+  const canvas = document.getElementById('snow-canvas');
+  if (!canvas || canvas.style.display === 'none') return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  _snowFlakes.forEach(f => {
+    f.x += f.vx; f.y += f.vy;
+    if (f.y > H + 8) { f.y = -8; f.x = Math.random() * W; }
+    if (f.x < -8) f.x = W + 8;
+    if (f.x > W + 8) f.x = -8;
+    ctx.save();
+    ctx.globalAlpha = f.alpha;
+    ctx.shadowBlur  = f.glow;
+    ctx.shadowColor = f.color;
+    ctx.fillStyle   = f.color;
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+  _snowRaf = requestAnimationFrame(_animSnow);
+}
+
+/* ════════════════════════════
    TEMA
 ════════════════════════════ */
 const THEMES = [
-  { id:'',        label:'Ungu',   color:'#5856d6' },
-  { id:'t-blue',  label:'Biru',   color:'#1d4ed8' },
-  { id:'t-green', label:'Hijau',  color:'#15803d' },
-  { id:'t-orange',label:'Oranye', color:'#c2410c' },
-  { id:'t-dark',  label:'Malam',  color:'#6d28d9' },
-  { id:'t-red',   label:'Merah',  color:'#9f1239' },
-  { id:'t-teal',  label:'Teal',   color:'#0f766e' },
+  { id:'',        label:'Ungu',    color:'#5856d6' },
+  { id:'t-blue',  label:'Biru',    color:'#1d4ed8' },
+  { id:'t-green', label:'Hijau',   color:'#15803d' },
+  { id:'t-orange',label:'Oranye',  color:'#c2410c' },
+  { id:'t-dark',  label:'Malam',   color:'#6d28d9' },
+  { id:'t-red',   label:'Merah',   color:'#9f1239' },
+  { id:'t-teal',  label:'Teal',    color:'#0f766e' },
+  { id:'t-snow',  label:'Salju ✨', color:'#c026d3' },
 ];
 let _curTheme = localStorage.getItem('kasku_theme') || '';
 
@@ -2818,6 +3200,8 @@ function applyTheme(id) {
   _curTheme = id;
   localStorage.setItem('kasku_theme', id);
   buildThemeGrid();
+  if (id === 't-snow') _startSnow();
+  else _stopSnow();
 }
 
 function buildThemeGrid() {
@@ -2847,6 +3231,7 @@ function closeThemePopup() {
 applyTheme(_curTheme);
 history.replaceState({ s:'sc-home', depth:0 }, '');
 renderHome();
+if (S.pin) _showPinScreen('unlock');
 </script>
 </body>
 </html>
