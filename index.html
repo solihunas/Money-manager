@@ -649,19 +649,20 @@
     .tp-overlay.open { display:block; }
 
     /* ── sc-add-tx: non-scrollable compact layout ── */
-    #sc-add-tx { overflow:hidden; display:flex; flex-direction:column; }
-    #sc-add-tx .form-body { flex:1; overflow:hidden; padding:10px 16px 10px; }
-    #sc-add-tx .fg { margin-bottom:10px; }
+    #sc-add-tx { overflow:hidden; }
+    #sc-add-tx.active { display:flex; flex-direction:column; }
+    #sc-add-tx .form-body { flex:1; padding:10px 16px 10px; overflow:hidden; }
+    #sc-add-tx .fg { margin-bottom:9px; }
     #sc-add-tx .fl { margin-bottom:3px; }
     #sc-add-tx .fi { padding:9px 13px; font-size:14px; border-radius:10px; }
     #sc-add-tx .amt-wrap .fi { padding-left:38px; }
     #sc-add-tx .amt-pre { font-size:14px; }
     #sc-add-tx .type-row { margin-bottom:0; }
     #sc-add-tx .type-btn { padding:9px 8px; font-size:13px; border-radius:10px; }
-    #sc-add-tx .cat-grid { gap:6px; }
+    #sc-add-tx .cat-grid { gap:5px; }
     #sc-add-tx .cat-btn { padding:6px 2px; font-size:9.5px; border-radius:9px; }
     #sc-add-tx .cat-btn .ci { font-size:17px; }
-    #sc-add-tx .btn.btn-pri { padding:13px 20px; font-size:14px; margin-top:2px; }
+    #sc-add-tx .btn.btn-pri { padding:12px 20px; font-size:14px; margin-top:2px; }
 
     /* ── USD input ── */
     .usd-toggle-btn {
