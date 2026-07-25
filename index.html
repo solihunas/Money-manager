@@ -558,18 +558,20 @@
     ══════════════════════════ */
     .sum-wrap { padding:12px 16px 0; }
     /* ── 3 Stat Cards ── */
-    .sc-card { background:var(--card); border-radius:16px; padding:16px 18px 14px; box-shadow:var(--sh); margin-bottom:10px; }
-    .sc-head { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
-    .sc-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-top:1px solid var(--border); }
+    .sc-card { background:var(--card); border-radius:16px; padding:13px 16px 12px; box-shadow:var(--sh); margin-bottom:10px; }
+    .sc-head { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+    .sc-row { display:flex; align-items:center; justify-content:space-between; padding:5px 0; border-top:1px solid var(--border); }
     .sc-row:first-of-type { border-top:none; }
-    .sc-lbl { font-size:13px; font-weight:600; color:var(--text2); }
-    .sc-val { font-size:14px; font-weight:800; text-align:right; }
-    .sc-sum { border-top:1.5px solid var(--border) !important; margin-top:4px; padding-top:12px !important; }
-    .sc-sum .sc-lbl { font-size:14px; font-weight:800; color:var(--text); }
-    .sc-sum .sc-val { font-size:17px; font-weight:900; }
-    .sum-section { background:var(--card); border-radius:16px; padding:14px 16px 12px; box-shadow:var(--sh); margin-bottom:10px; }
-    .sum-sec-ttl { font-size:14px; font-weight:800; color:var(--text); margin-bottom:12px; }
+    .sc-lbl { font-size:12.5px; font-weight:600; color:var(--text2); }
+    .sc-val { font-size:13.5px; font-weight:800; text-align:right; }
+    .sc-sum { border-top:1.5px solid var(--border) !important; margin-top:3px; padding-top:8px !important; }
+    .sc-sum .sc-lbl { font-size:13px; font-weight:800; color:var(--text); }
+    .sc-sum .sc-val { font-size:16px; font-weight:900; }
+    .sum-section { background:var(--card); border-radius:16px; padding:13px 16px 12px; box-shadow:var(--sh); margin-bottom:10px; }
+    .sum-sec-ttl { font-size:13.5px; font-weight:800; color:var(--text); margin-bottom:10px; }
     .sum-chart-canvas { width:100%; display:block; border-radius:8px; }
+    /* multi-curve chart */
+    #chart-multicurve { display:block; touch-action:none; cursor:crosshair; }
     .sum-bvp-bar { height:22px; border-radius:6px; overflow:hidden; display:flex; margin-bottom:8px; }
     .sum-bvp-seg { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white; transition:width .4s; }
     .sum-bvp-leg { display:flex; gap:16px; }
@@ -1044,22 +1046,25 @@
         </div>
       </div>
 
-      <!-- Equity Curve -->
+      <!-- Multi-line Equity Chart -->
       <div class="sum-section">
-        <div class="sum-sec-ttl">Kurva Saldo</div>
-        <canvas id="chart-equity" class="sum-chart-canvas" height="160"></canvas>
-      </div>
-
-      <!-- Equity Curve — tanpa investasi -->
-      <div class="sum-section">
-        <div class="sum-sec-ttl">Kurva Saldo <span style="font-size:11px;font-weight:600;color:var(--text3)">(tanpa investasi)</span></div>
-        <canvas id="chart-equity-noinv" class="sum-chart-canvas" height="160"></canvas>
-      </div>
-
-      <!-- Equity Curve — Bisnis -->
-      <div class="sum-section">
-        <div class="sum-sec-ttl">Kurva Bisnis <span style="font-size:11px;font-weight:600;color:var(--text3)">(pemasukan &amp; pengeluaran bisnis)</span></div>
-        <canvas id="chart-equity-biz" class="sum-chart-canvas" height="160"></canvas>
+        <div class="sum-sec-ttl">Kurva Ekuitas</div>
+        <canvas id="chart-multicurve"></canvas>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:18px;height:2.5px;border-radius:2px;background:#f59e0b;flex-shrink:0"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--text2)">Bisnis (net)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:18px;height:2.5px;border-radius:2px;background:var(--primary);flex-shrink:0"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--text2)">Saldo Total</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:18px;height:2.5px;border-radius:2px;background:#e11d48;flex-shrink:0"></div>
+            <span style="font-size:11px;font-weight:700;color:var(--text2)">Pengeluaran Pribadi</span>
+          </div>
+        </div>
+        <div style="margin-top:6px;font-size:10.5px;color:var(--text3);text-align:center">Tekan tahan &amp; geser untuk melihat detail per tanggal</div>
       </div>
 
       <!-- Tren Cash Flow -->
@@ -1415,8 +1420,8 @@ let _homeWalF    = '';
 let _selectedBill = null;
 let _editTxId    = null;
 let _detailTxId  = null;
-let _eqPtsStored = [];
 let _trendBarsStored = [];
+let _mcCanvas = null;
 let _histPeriod  = 'all';
 let _histSearch  = '';
 let _sumPeriod   = 'all';
@@ -2488,11 +2493,8 @@ function renderSummary() {
   _buildPeriodChips('sum-period-chips', _sumPeriod, 'setSumPeriod');
   const d = _sumData();
 
-  /* Equity curves */
-  _drawEquityCurve(buildEquityCurve());
-  const cTextForNoInv = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#1a1a2e';
-  _drawEquityCurve(buildEquityCurveNoInv(), { canvasId: 'chart-equity-noinv', lineColor: cTextForNoInv, noInv: true });
-  _drawEquityCurve(buildEquityCurveBiz(), { canvasId: 'chart-equity-biz', lineColor: '#f59e0b', noInv: true });
+  /* Multi-line equity chart */
+  _drawMultiCurve(buildMultiCurveData());
 
   /* 3 Stat Cards */
   document.getElementById('sc-biz-inc').textContent = '+ ' + rp(d.bizInc);
@@ -2698,155 +2700,257 @@ function _drawTrend(weeks) {
 }
 
 /* ════════════════════════════
-   EQUITY CURVE
+   MULTI-LINE EQUITY CHART
 ════════════════════════════ */
-function buildEquityCurve() {
-  if (!S.transactions.length) return [];
-  const currentTotal = S.wallets.reduce((a, w) => a + (w.balance || 0), 0);
-  const sorted = [...S.transactions].sort((a, b) =>
-    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
-  );
-  const totalNet = sorted.reduce((a, t) => a + (t.type==='income' ? t.amount : -t.amount), 0);
-  let bal = currentTotal - totalNet;
-  const dateMap = {};
-  sorted.forEach(t => {
-    bal += (t.type === 'income' ? t.amount : -t.amount);
-    dateMap[t.date || ''] = bal;
+function buildMultiCurveData() {
+  const txs = [...S.transactions]
+    .filter(t => t.date && t.tipe !== 'transfer' && t.category !== 'tfr_in' && t.category !== 'tfr_out')
+    .sort((a, b) => ((a.date||'')+(a.time||'00:00')).localeCompare((b.date||'')+(b.time||'00:00')));
+  if (!txs.length) return [];
+  const dates = [...new Set(txs.map(t => t.date))].sort();
+  const bizD = {}, salD = {}, prvD = {};
+  txs.forEach(t => {
+    const d = t.date;
+    bizD[d] = bizD[d]||0; salD[d] = salD[d]||0; prvD[d] = prvD[d]||0;
+    if (t.tipe === 'bisnis') bizD[d] += t.type==='income' ? t.amount : -t.amount;
+    salD[d] += t.type==='income' ? t.amount : -t.amount;
+    if ((t.tipe==='pribadi'||!t.tipe) && t.type==='expense' && t.category!=='investasi_ex')
+      prvD[d] += t.amount;
   });
-  return Object.entries(dateMap)
-    .filter(([d]) => d)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, bal]) => ({ date, bal }));
+  let bizC=0, salC=0, prvC=0;
+  return dates.map(date => {
+    bizC += bizD[date]||0; salC += salD[date]||0; prvC += prvD[date]||0;
+    return { date, biz:bizC, saldo:salC, prvExp:prvC };
+  });
 }
 
-function _drawEquityCurve(pts, opts) {
-  opts = opts || {};
-  const canvasId = opts.canvasId || 'chart-equity';
-  const canvas = document.getElementById(canvasId);
+function _fmtYAbbr(v) {
+  const neg = v < 0, a = Math.abs(v);
+  let s;
+  if (a >= 1e9)      s = (a/1e9).toFixed(1).replace(/\.0$/,'')+'M';
+  else if (a >= 1e6) s = (a/1e6).toFixed(1).replace(/\.0$/,'')+'jt';
+  else if (a >= 1e3) s = Math.round(a/1e3)+'rb';
+  else               s = a.toFixed(0);
+  return (neg?'-':'')+s;
+}
+
+function _niceGrid(minV, maxV) {
+  const range = maxV - minV || 1;
+  const rawStep = range / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const candidates = [1,2,2.5,5,10].map(s => s*mag);
+  const step = candidates.find(s => range/s <= 6) || candidates[candidates.length-1];
+  const start = Math.floor(minV/step)*step;
+  const lvls = [];
+  for (let v=start; v<=maxV+step*0.01; v+=step) { lvls.push(parseFloat(v.toPrecision(10))); if(lvls.length>8) break; }
+  return lvls.filter(v => v>=minV-step*0.15 && v<=maxV+step*0.15);
+}
+
+function _drawMultiCurve(pts) {
+  const canvas = document.getElementById('chart-multicurve');
   if (!canvas) return;
+  _mcCanvas = canvas;
   const dpr = window.devicePixelRatio || 1;
-  const W   = canvas.parentElement.clientWidth - 28;
-  const H   = 160;
-  canvas.width  = W * dpr; canvas.height = H * dpr;
-  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const W = canvas.parentElement.clientWidth;
+  const H = 220;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  const cs = getComputedStyle(document.body);
+  const layout = {
+    W, H, dpr,
+    padL: 6, padR: 62, padT: 18, padB: 26,
+    C_BIZ:   '#f59e0b',
+    C_SALDO: cs.getPropertyValue('--primary').trim() || '#5856d6',
+    C_PRV:   '#e11d48',
+    cGrid:   cs.getPropertyValue('--border').trim()  || '#e8e9f0',
+    cTxt:    cs.getPropertyValue('--text2').trim()   || '#6b7280',
+    cTxt3:   cs.getPropertyValue('--text3').trim()   || '#9ca3af',
+    cCard:   cs.getPropertyValue('--card').trim()    || '#ffffff',
+  };
+  layout.cW = W - layout.padL - layout.padR;
+  layout.cH = H - layout.padT - layout.padB;
   const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, W, H);
-  const cs      = getComputedStyle(document.body);
-  const cPri    = cs.getPropertyValue('--primary').trim() || '#5856d6';
-  const cTxt    = cs.getPropertyValue('--text2').trim()   || '#6b7280';
-  const cLine   = opts.lineColor || cPri;
-  if (pts.length < 2) {
-    ctx.fillStyle = cTxt; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('Belum ada data', W/2, H/2); return;
-  }
-  const padL=4, padR=4, padT=28, padB=24;
-  const cW = W - padL - padR;
-  const cH = H - padT - padB;
-  const bals = pts.map(p => p.bal);
-  const minB = Math.min(...bals), maxB = Math.max(...bals);
-  const range = Math.max(maxB - minB, 1);
-  const n = pts.length;
-  const xs = pts.map((_, i) => padL + (i / (n-1)) * cW);
-  const ys = pts.map(p => padT + cH - ((p.bal - minB) / range) * cH);
-
-  /* ATH index */
-  let athIdx = 0;
-  bals.forEach((b, i) => { if (b > bals[athIdx]) athIdx = i; });
-
-  /* Catmull-Rom → Bezier */
-  function drawSmooth(ctx) {
-    ctx.moveTo(xs[0], ys[0]);
-    for (let i = 1; i < n; i++) {
-      const p0 = i > 1 ? { x:xs[i-2], y:ys[i-2] } : { x:xs[0], y:ys[0] };
-      const p1 = { x:xs[i-1], y:ys[i-1] };
-      const p2 = { x:xs[i],   y:ys[i] };
-      const p3 = i < n-1 ? { x:xs[i+1], y:ys[i+1] } : p2;
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-    }
-  }
-
-  /* Gradient fill */
-  const grad = ctx.createLinearGradient(0, padT, 0, padT + cH);
-  grad.addColorStop(0,   cLine + '55'); grad.addColorStop(0.7, cLine + '11'); grad.addColorStop(1, cLine + '00');
-  ctx.beginPath(); drawSmooth(ctx);
-  ctx.lineTo(xs[n-1], padT + cH); ctx.lineTo(xs[0], padT + cH); ctx.closePath();
-  ctx.fillStyle = grad; ctx.fill();
-
-  /* Glow/stroke layers: outer → inner */
-  [[9,'15'],[5,'35'],[2.5,'80'],[1.2,'ff']].forEach(([lw, alpha]) => {
-    ctx.beginPath(); drawSmooth(ctx);
-    ctx.strokeStyle = cLine + alpha; ctx.lineWidth = lw; ctx.lineJoin='round'; ctx.lineCap='round';
-    ctx.stroke();
-  });
-
-  /* ATH dot + label above the dot */
-  const athX = xs[athIdx], athY = ys[athIdx];
-  ctx.beginPath(); ctx.arc(athX, athY, 5, 0, Math.PI*2);
-  ctx.fillStyle = '#f59e0b'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
-  const cTextMain = cs.getPropertyValue('--text').trim() || '#1a1a2e';
-  ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = cTextMain; ctx.textAlign = 'center';
-  const athLblY = Math.max(athY - 10, 10);
-  ctx.fillText('ATH ' + rp(bals[athIdx]), Math.min(Math.max(athX, 40), W - 40), athLblY);
-
-  /* Runner dot at last point */
-  const rx = xs[n-1], ry = ys[n-1];
-  [[14,'18'],[9,'38'],[5,'70']].forEach(([r, alpha]) => {
-    ctx.beginPath(); ctx.arc(rx, ry, r, 0, Math.PI*2);
-    ctx.fillStyle = cLine + alpha; ctx.fill();
-  });
-  ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI*2);
-  ctx.fillStyle = 'white'; ctx.shadowColor = cLine; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
-  ctx.beginPath(); ctx.arc(rx, ry, 1.5, 0, Math.PI*2);
-  ctx.fillStyle = cLine; ctx.fill();
-
-  /* Date labels (first & last) */
-  ctx.fillStyle = cTxt; ctx.font = '9px sans-serif'; ctx.shadowBlur = 0;
-  ctx.textAlign = 'left';
-  if (pts[0].date) ctx.fillText(fmtShort(pts[0].date), xs[0], padT + cH + 14);
-  ctx.textAlign = 'right';
-  if (pts[n-1].date) ctx.fillText(fmtShort(pts[n-1].date), xs[n-1], padT + cH + 14);
-
-  /* Click handler (local closure — no global pts needed) */
-  const storedPts = pts.map((p, i) => ({ x: xs[i], y: ys[i], date: p.date, bal: p.bal }));
-  if (!opts.noInv) _eqPtsStored = storedPts;
-  _registerCanvasClick(canvas, (cx) => {
-    if (!storedPts.length) return;
-    let nearest = storedPts[0], minD = Infinity;
-    storedPts.forEach(p => { const d = Math.abs(p.x - cx); if (d < minD) { minD = d; nearest = p; } });
-    _showChartTooltip(canvas, nearest.x, nearest.y, fmtDate(nearest.date) + '\n' + rp(nearest.bal));
-  });
+  _mcDraw(ctx, pts, layout, -1);
+  _mcBind(canvas, pts, layout);
 }
 
-function buildEquityCurveNoInv() {
-  if (!S.transactions.length) return [];
-  const currentTotal = S.wallets.reduce((a, w) => a + (w.balance || 0), 0);
-  /* Current wallets already had investasi_ex deducted — add it back for "no-inv" view */
-  const invTotal = S.transactions
-    .filter(t => t.type === 'expense' && t.category === 'investasi_ex')
-    .reduce((a, t) => a + t.amount, 0);
-  const sorted = [...S.transactions].sort((a, b) =>
-    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
-  );
-  /* Net change excluding investasi_ex */
-  const totalNetNoInv = sorted
-    .filter(t => !(t.type === 'expense' && t.category === 'investasi_ex'))
-    .reduce((a, t) => a + (t.type === 'income' ? t.amount : -t.amount), 0);
-  let bal = (currentTotal + invTotal) - totalNetNoInv;
-  const dateMap = {};
-  sorted.forEach(t => {
-    if (t.type === 'expense' && t.category === 'investasi_ex') return;
-    bal += (t.type === 'income' ? t.amount : -t.amount);
-    dateMap[t.date || ''] = bal;
+function _mcDraw(ctx, pts, L, activeIdx) {
+  const { W, H, dpr, padL, padR, padT, padB, cW, cH,
+          C_BIZ, C_SALDO, C_PRV, cGrid, cTxt, cTxt3, cCard } = L;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  const n = pts.length;
+  if (!n) {
+    ctx.fillStyle = cTxt; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Belum ada data — tambah transaksi dulu', W/2, H/2); return;
+  }
+
+  const allVals = pts.flatMap(p => [p.biz, p.saldo, p.prvExp]);
+  let minV = Math.min(...allVals), maxV = Math.max(...allVals);
+  const pad = Math.max((maxV - minV) * 0.12, Math.abs(maxV) * 0.05, 50000);
+  minV -= pad * 0.4; maxV += pad;
+  const range = maxV - minV || 1;
+
+  const xs = pts.map((_, i) => padL + (i / Math.max(n-1, 1)) * cW);
+  const yOf = v => padT + cH - ((v - minV) / range) * cH;
+  const bizYs  = pts.map(p => yOf(p.biz));
+  const salYs  = pts.map(p => yOf(p.saldo));
+  const prvYs  = pts.map(p => yOf(p.prvExp));
+
+  /* ── Horizontal grid lines with Y labels ── */
+  const gridLvls = _niceGrid(minV, maxV);
+  gridLvls.forEach(v => {
+    const gy = yOf(v);
+    if (gy < padT - 1 || gy > padT + cH + 1) return;
+    ctx.strokeStyle = cGrid;
+    ctx.lineWidth = 0.7;
+    ctx.setLineDash([3, 6]);
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(padL + cW, gy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = cTxt3;
+    ctx.font = '8px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(_fmtYAbbr(v), padL + cW + 4, gy + 3.5);
   });
-  return Object.entries(dateMap)
-    .filter(([d]) => d)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, bal]) => ({ date, bal }));
+
+  /* Zero line if visible */
+  const yZero = yOf(0);
+  if (yZero >= padT && yZero <= padT + cH) {
+    ctx.strokeStyle = cTxt3 + 'cc';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath(); ctx.moveTo(padL, yZero); ctx.lineTo(padL + cW, yZero); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* ── Smooth lines (Catmull-Rom → Bezier) ── */
+  function drawLine(ys, color, lw) {
+    ctx.beginPath(); ctx.moveTo(xs[0], ys[0]);
+    for (let i=1; i<n; i++) {
+      const p0 = i>1?{x:xs[i-2],y:ys[i-2]}:{x:xs[0],y:ys[0]};
+      const p1 = {x:xs[i-1],y:ys[i-1]};
+      const p2 = {x:xs[i],  y:ys[i]};
+      const p3 = i<n-1?{x:xs[i+1],y:ys[i+1]}:p2;
+      ctx.bezierCurveTo(
+        p1.x+(p2.x-p0.x)/6, p1.y+(p2.y-p0.y)/6,
+        p2.x-(p3.x-p1.x)/6, p2.y-(p3.y-p1.y)/6,
+        p2.x, p2.y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = lw;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+  }
+  drawLine(bizYs,  C_BIZ,   2);
+  drawLine(salYs,  C_SALDO, 2);
+  drawLine(prvYs,  C_PRV,   2);
+
+  /* ── X-axis date labels ── */
+  ctx.font = '8.5px sans-serif'; ctx.fillStyle = cTxt3;
+  ctx.textAlign = 'left';  if(pts[0]?.date)    ctx.fillText(fmtShort(pts[0].date),   padL,       H-5);
+  ctx.textAlign = 'right'; if(pts[n-1]?.date)  ctx.fillText(fmtShort(pts[n-1].date), padL+cW,    H-5);
+  if (n > 5) { const m=Math.floor(n/2); ctx.textAlign='center'; if(pts[m]?.date) ctx.fillText(fmtShort(pts[m].date), xs[m], H-5); }
+
+  /* ── Right-side value labels (at activeIdx or last) ── */
+  const idx  = activeIdx >= 0 ? activeIdx : n-1;
+  const rX   = padL + cW + 5;
+  const lbls = [
+    { val: pts[idx].biz,    y: bizYs[idx],  color: C_BIZ   },
+    { val: pts[idx].saldo,  y: salYs[idx],  color: C_SALDO },
+    { val: pts[idx].prvExp, y: prvYs[idx],  color: C_PRV   },
+  ].sort((a,b) => a.y - b.y);
+  for (let i=1; i<lbls.length; i++) { if (lbls[i].y - lbls[i-1].y < 12) lbls[i].y = lbls[i-1].y + 12; }
+  lbls.forEach(l => { l.y = Math.max(padT+5, Math.min(padT+cH-2, l.y)); });
+  lbls.forEach(l => {
+    /* colored dot marker */
+    ctx.beginPath(); ctx.arc(rX + 5, l.y, 3, 0, Math.PI*2);
+    ctx.fillStyle = l.color; ctx.fill();
+    /* value text */
+    ctx.fillStyle = l.color;
+    ctx.font = 'bold 8.5px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(_fmtYAbbr(l.val), rX + 11, l.y + 3.5);
+  });
+
+  /* ── Crosshair or terminal dots ── */
+  if (activeIdx >= 0) {
+    const cx = xs[activeIdx];
+    ctx.strokeStyle = cTxt + '80';
+    ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, padT+cH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    [[bizYs, C_BIZ], [salYs, C_SALDO], [prvYs, C_PRV]].forEach(([ys, col]) => {
+      const cy = ys[activeIdx];
+      ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2);
+      ctx.fillStyle = cCard; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, 3.2, 0, Math.PI*2);
+      ctx.fillStyle = col; ctx.fill();
+    });
+
+    /* Date label pill at bottom of crosshair */
+    const ds   = fmtShort(pts[activeIdx].date);
+    const lblW = ds.length * 6.2 + 14;
+    const lblX = Math.max(padL, Math.min(padL+cW-lblW, cx - lblW/2));
+    ctx.fillStyle = cGrid;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(lblX, padT+cH+2, lblW, 15, 3);
+    else ctx.rect(lblX, padT+cH+2, lblW, 15);
+    ctx.fill();
+    ctx.fillStyle = cTxt;
+    ctx.font = 'bold 8.5px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(ds, lblX + lblW/2, padT+cH+12.5);
+  } else {
+    [[bizYs, C_BIZ], [salYs, C_SALDO], [prvYs, C_PRV]].forEach(([ys, col]) => {
+      const rx = xs[n-1], ry = ys[n-1];
+      ctx.beginPath(); ctx.arc(rx, ry, 5, 0, Math.PI*2);
+      ctx.fillStyle = col+'28'; ctx.fill();
+      ctx.beginPath(); ctx.arc(rx, ry, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = col; ctx.fill();
+    });
+  }
+}
+
+function _mcBind(canvas, pts, layout) {
+  ['_mcD','_mcM','_mcU'].forEach(k => {
+    if (!canvas[k]) return;
+    canvas.removeEventListener('mousedown',  canvas[k]);
+    canvas.removeEventListener('touchstart', canvas[k]);
+    canvas.removeEventListener('mousemove',  canvas[k]);
+    canvas.removeEventListener('touchmove',  canvas[k]);
+    canvas.removeEventListener('mouseup',    canvas[k]);
+    canvas.removeEventListener('touchend',   canvas[k]);
+    canvas.removeEventListener('mouseleave', canvas[k]);
+  });
+  let active = false;
+  const ctx = canvas.getContext('2d');
+  const { padL, cW } = layout;
+  const xs = pts.map((_, i) => padL + (i / Math.max(pts.length-1, 1)) * cW);
+
+  function nearestIdx(clientX) {
+    const r = canvas.getBoundingClientRect();
+    const lx = (clientX - r.left) * (layout.W / r.width);
+    let best=0, minD=Infinity;
+    xs.forEach((x,i) => { const d=Math.abs(x-lx); if(d<minD){minD=d;best=i;} });
+    return best;
+  }
+  function cx(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
+
+  canvas._mcD = e => { active=true; _mcDraw(ctx, pts, layout, nearestIdx(cx(e))); e.preventDefault(); };
+  canvas._mcM = e => { if(!active) return; _mcDraw(ctx, pts, layout, nearestIdx(cx(e))); e.preventDefault(); };
+  canvas._mcU = e => {
+    if (!active) return; active=false;
+    if (e.type !== 'mouseleave') setTimeout(()=>_mcDraw(ctx, pts, layout, -1), 1600);
+    else _mcDraw(ctx, pts, layout, -1);
+  };
+
+  canvas.addEventListener('mousedown',  canvas._mcD, { passive:false });
+  canvas.addEventListener('touchstart', canvas._mcD, { passive:false });
+  canvas.addEventListener('mousemove',  canvas._mcM, { passive:false });
+  canvas.addEventListener('touchmove',  canvas._mcM, { passive:false });
+  canvas.addEventListener('mouseup',    canvas._mcU);
+  canvas.addEventListener('touchend',   canvas._mcU);
+  canvas.addEventListener('mouseleave', canvas._mcU);
 }
 
 /* ════════════════════════════
@@ -2931,27 +3035,6 @@ function copySummary() {
   } else {
     toast('Browser tidak mendukung salin otomatis','err');
   }
-}
-
-/* ════════════════════════════
-   RANGKUMAN BISNIS
-════════════════════════════ */
-function buildEquityCurveBiz() {
-  const bizTxs = S.transactions.filter(t => t.tipe === 'bisnis');
-  if (bizTxs.length < 2) return [];
-  const sorted = [...bizTxs].sort((a, b) =>
-    ((a.date||'0000-00-00')+(a.time||'00:00')).localeCompare((b.date||'0000-00-00')+(b.time||'00:00'))
-  );
-  let bal = 0;
-  const dateMap = {};
-  sorted.forEach(t => {
-    bal += (t.type === 'income' ? t.amount : -t.amount);
-    dateMap[t.date || ''] = bal;
-  });
-  return Object.entries(dateMap)
-    .filter(([d]) => d)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, bal]) => ({ date, bal }));
 }
 
 function generateBizSummary(d) {
