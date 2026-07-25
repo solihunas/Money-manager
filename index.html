@@ -648,6 +648,31 @@
     }
     .tp-overlay.open { display:block; }
 
+    /* ── sc-add-tx: non-scrollable compact layout ── */
+    #sc-add-tx { overflow:hidden; display:flex; flex-direction:column; }
+    #sc-add-tx .form-body { flex:1; overflow:hidden; padding:10px 16px 10px; }
+    #sc-add-tx .fg { margin-bottom:10px; }
+    #sc-add-tx .fl { margin-bottom:3px; }
+    #sc-add-tx .fi { padding:9px 13px; font-size:14px; border-radius:10px; }
+    #sc-add-tx .amt-wrap .fi { padding-left:38px; }
+    #sc-add-tx .amt-pre { font-size:14px; }
+    #sc-add-tx .type-row { margin-bottom:0; }
+    #sc-add-tx .type-btn { padding:9px 8px; font-size:13px; border-radius:10px; }
+    #sc-add-tx .cat-grid { gap:6px; }
+    #sc-add-tx .cat-btn { padding:6px 2px; font-size:9.5px; border-radius:9px; }
+    #sc-add-tx .cat-btn .ci { font-size:17px; }
+    #sc-add-tx .btn.btn-pri { padding:13px 20px; font-size:14px; margin-top:2px; }
+
+    /* ── USD input ── */
+    .usd-toggle-btn {
+      font-size:11px; font-weight:800; color:var(--primary);
+      background:var(--pri-lt); border:1.5px solid var(--primary);
+      border-radius:20px; padding:3px 10px; cursor:pointer;
+      -webkit-tap-highlight-color:transparent; line-height:1.4;
+    }
+    .usd-toggle-btn.active { background:var(--primary); color:#fff; }
+    .usd-convert { font-size:11px; color:var(--text2); margin-top:3px; font-weight:700; padding-left:2px; }
+
     /* ── History search ── */
     .hist-search-wrap {
       display:flex; align-items:center; gap:8px;
@@ -902,11 +927,15 @@
         </div>
       </div>
       <div class="fg">
-        <label class="fl">Nominal</label>
-        <div class="amt-wrap">
-          <span class="amt-pre">Rp</span>
-          <input type="number" class="fi" id="txf-amt" placeholder="0" min="0" inputmode="numeric">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+          <label class="fl" style="margin-bottom:0">Nominal</label>
+          <button class="usd-toggle-btn" id="txf-usd-toggle" onclick="toggleUsdMode()" style="display:none">💱 USD</button>
         </div>
+        <div class="amt-wrap">
+          <span class="amt-pre" id="txf-amt-pre">Rp</span>
+          <input type="number" class="fi" id="txf-amt" placeholder="0" min="0" inputmode="numeric" oninput="onAmtInput()">
+        </div>
+        <div class="usd-convert" id="txf-usd-convert" style="display:none">= <span id="txf-usd-idr">Rp 0</span></div>
       </div>
       <div class="fg">
         <label class="fl">Tanggal</label>
@@ -1177,6 +1206,14 @@
     <div class="sh-title">Edit Profil</div>
     <div class="sh-body">
       <div class="fg"><label class="fl">Nama Pemilik</label><input type="text" class="fi" id="pf-name" placeholder="Masukkan nama Anda..."></div>
+      <div class="fg">
+        <label class="fl">Kurs USD → IDR</label>
+        <div class="amt-wrap">
+          <span class="amt-pre">Rp</span>
+          <input type="number" class="fi" id="pf-usd-rate" placeholder="16500" inputmode="numeric">
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">Digunakan saat input pemasukan dalam USD</div>
+      </div>
       <button class="btn btn-pri" onclick="saveProfile()">Simpan</button>
       <div class="pin-toggle-row">
         <div>
@@ -1246,7 +1283,7 @@
 const KEY = 'kasku_v2';
 
 function freshState() {
-  return { profile:{ name:'Nama Pemilik' }, wallets:[], transactions:[], notes:[], bills:[], hidden:false, pin:null };
+  return { profile:{ name:'Nama Pemilik', usdRate:16500 }, wallets:[], transactions:[], notes:[], bills:[], hidden:false, pin:null };
 }
 
 function loadState() {
@@ -1319,14 +1356,12 @@ const CAT_IN = [
   {id:'lain_in',   ic:'💰', lbl:'Lainnya'},
 ];
 const CAT_EX = [
-  {id:'operasional',  ic:'🖥️',  lbl:'Operasional Bisnis'},
-  {id:'kebutuhan',    ic:'🛍️',  lbl:'Kebutuhan Pribadi'},
+  {id:'operasional',  ic:'🖥️',  lbl:'Operasional'},
+  {id:'kebutuhan',    ic:'🛍️',  lbl:'Kebutuhan'},
   {id:'keluarga',     ic:'👨‍👩‍👧', lbl:'Keluarga'},
   {id:'utilitas',     ic:'🔧',  lbl:'Tools Bisnis'},
-  {id:'kesehatan',    ic:'🏥',  lbl:'Kesehatan'},
   {id:'tarik_tunai',  ic:'💵',  lbl:'Tarik Tunai'},
-  {id:'tagihan',      ic:'⚡',  lbl:'Tagihan'},
-  {id:'investasi_ex', ic:'📊',  lbl:'Alihkan ke Investasi'},
+  {id:'investasi_ex', ic:'📊',  lbl:'Investasi'},
   {id:'tfr_out',      ic:'↗️',  lbl:'Transfer'},
   {id:'lain_ex',      ic:'💸',  lbl:'Lainnya'},
 ];
@@ -1384,6 +1419,7 @@ let _trendBarsStored = [];
 let _histPeriod  = 'all';
 let _histSearch  = '';
 let _sumPeriod   = 'all';
+let _usdMode     = false;
 
 const NAV_SCREENS = { 'sc-home':'nb-home', 'sc-history':'nb-history', 'sc-notes':'nb-catatan', 'sc-summary':'nb-rangkuman' };
 const NO_NAV = ['sc-wallet-form','sc-wallet-detail','sc-add-tx'];
@@ -1775,7 +1811,7 @@ function setupAddTx() {
 }
 
 function setTxType(type) {
-  _txType = type; _txCat = null; _selectedBill = null;
+  _txType = type; _txCat = null; _selectedBill = null; _usdMode = false;
   document.getElementById('tt-inc').className = 'type-btn' + (type==='income'  ? ' t-inc' : '');
   document.getElementById('tt-exp').className = 'type-btn' + (type==='expense' ? ' t-exp' : '');
   document.getElementById('txf-bill-section').style.display = 'none';
@@ -1783,6 +1819,12 @@ function setTxType(type) {
   document.getElementById('txf-cats').innerHTML = cats.map(c =>
     `<button class="cat-btn" id="cb-${c.id}" onclick="pickCat('${c.id}')"><span class="ci">${c.ic}</span>${c.lbl}</button>`
   ).join('');
+  const usdToggle = document.getElementById('txf-usd-toggle');
+  const usdConv   = document.getElementById('txf-usd-convert');
+  const amtPre    = document.getElementById('txf-amt-pre');
+  if (usdToggle) { usdToggle.style.display = (type==='income') ? '' : 'none'; usdToggle.classList.remove('active'); }
+  if (usdConv)   usdConv.style.display = 'none';
+  if (amtPre)    amtPre.textContent = 'Rp';
 }
 
 const _BISNIS_CATS = new Set(['penjualan','freelance','operasional','investasi','bisnis']);
@@ -1791,6 +1833,26 @@ function setTxTipe(tipe) {
   _txTipe = tipe;
   document.getElementById('tt-prv').className = 'type-btn' + (tipe==='pribadi' ? ' t-prv' : '');
   document.getElementById('tt-biz').className = 'type-btn' + (tipe==='bisnis'  ? ' t-biz' : '');
+}
+
+function toggleUsdMode() {
+  _usdMode = !_usdMode;
+  const btn  = document.getElementById('txf-usd-toggle');
+  const pre  = document.getElementById('txf-amt-pre');
+  const conv = document.getElementById('txf-usd-convert');
+  if (btn)  btn.classList.toggle('active', _usdMode);
+  if (pre)  pre.textContent = _usdMode ? '$' : 'Rp';
+  if (conv) conv.style.display = _usdMode ? '' : 'none';
+  document.getElementById('txf-amt').value = '';
+  onAmtInput();
+}
+
+function onAmtInput() {
+  if (!_usdMode) return;
+  const val  = parseFloat(document.getElementById('txf-amt').value) || 0;
+  const rate = S.profile.usdRate || 16500;
+  const idrEl = document.getElementById('txf-usd-idr');
+  if (idrEl) idrEl.textContent = 'Rp ' + Math.round(val * rate).toLocaleString('id-ID');
 }
 
 function pickCat(id) {
@@ -1855,14 +1917,23 @@ function selectBill(id) {
 
 function saveTx() {
   const walId = document.getElementById('txf-wallet').value;
-  const amt   = parseFloat(document.getElementById('txf-amt').value);
   const date  = document.getElementById('txf-date').value;
   const note  = document.getElementById('txf-note').value.trim();
-  if (!walId)         return toast('Pilih dompet terlebih dahulu','err');
-  if (!amt || amt<=0) return toast('Masukkan nominal yang valid','err');
-  if (!_txCat)        return toast('Pilih kategori','err');
+  if (!walId)  return toast('Pilih dompet terlebih dahulu','err');
+  if (!_txCat) return toast('Pilih kategori','err');
   const w = S.wallets.find(x => x.id === walId);
   if (!w) return;
+
+  let rawAmt  = parseFloat(document.getElementById('txf-amt').value);
+  let amountUsd = null;
+  if (_usdMode && _txType === 'income') {
+    if (!rawAmt || rawAmt <= 0) return toast('Masukkan nominal USD yang valid','err');
+    amountUsd = rawAmt;
+    rawAmt = Math.round(rawAmt * (S.profile.usdRate || 16500));
+  }
+  if (!rawAmt || rawAmt <= 0) return toast('Masukkan nominal yang valid','err');
+  const amt = rawAmt;
+
   const tipe = (_txCat === 'tfr_in' || _txCat === 'tfr_out') ? 'transfer' : (_txTipe || 'pribadi');
   const wasEdit = !!_editTxId;
   if (wasEdit) {
@@ -1872,16 +1943,19 @@ function saveTx() {
       if (oldW) oldW.balance += (old.type === 'income' ? -old.amount : old.amount);
       old.type = _txType; old.category = _txCat; old.tipe = tipe;
       old.amount = amt; old.date = date; old.note = note;
+      if (amountUsd) old.amountUsd = amountUsd; else delete old.amountUsd;
       w.balance += (_txType === 'income' ? amt : -amt);
     }
     _editTxId = null;
   } else {
     const time = nowTime();
-    S.transactions.push({ id:uid(), walletId:walId, type:_txType, category:_txCat, tipe, amount:amt, date, time, note });
+    const tx = { id:uid(), walletId:walId, type:_txType, category:_txCat, tipe, amount:amt, date, time, note };
+    if (amountUsd) tx.amountUsd = amountUsd;
+    S.transactions.push(tx);
     w.balance += (_txType === 'income' ? amt : -amt);
     if (_selectedBill && _txType === 'expense') {
       const b = S.bills.find(x => x.id === _selectedBill);
-      if (b) { b.paid = true; }
+      if (b) b.paid = true;
     }
   }
   save(); toast(wasEdit ? 'Transaksi diperbarui ✓' : 'Transaksi disimpan ✓'); goBack(); renderHome();
@@ -2036,6 +2110,7 @@ function drawHistList() {
              </div>
              <div class="tx-right">
                <div class="tx-amt ${inc?'inc':'exp'}">${inc?'+ ':'- '}${rp(t.amount)}</div>
+               ${t.amountUsd ? `<div style="font-size:10px;color:var(--text3);text-align:right;font-weight:700;margin-top:1px">$${Number(t.amountUsd).toLocaleString()}</div>` : ''}
              </div>
            </div>
          </div>`;
@@ -2159,6 +2234,10 @@ function openTxDetail(id) {
     { l:'Tanggal',  v: fmtDate(t.date) },
     { l:'Jam',      v: t.time || '–' },
   ];
+  if (t.amountUsd) {
+    const rate = S.profile.usdRate || 16500;
+    rows.push({ l:'Nominal USD', v: `$${Number(t.amountUsd).toLocaleString()} · kurs Rp ${rate.toLocaleString('id-ID')}/USD` });
+  }
   if (t.note && t.category !== 'lain_in' && t.category !== 'lain_ex') {
     rows.push({ l:'Catatan', v: esc(t.note) });
   }
@@ -2938,6 +3017,7 @@ function copyBizSummary() {
 ════════════════════════════ */
 function openProfile() {
   document.getElementById('pf-name').value = S.profile.name;
+  document.getElementById('pf-usd-rate').value = S.profile.usdRate || 16500;
   const pinChk = document.getElementById('pf-pin-chk');
   const pinSub = document.getElementById('pf-pin-sub');
   if (pinChk) pinChk.checked = !!S.pin;
@@ -2947,7 +3027,10 @@ function openProfile() {
 function saveProfile() {
   const name = document.getElementById('pf-name').value.trim();
   if (!name) return toast('Masukkan nama Anda','err');
-  S.profile.name = name; save(); closeOv('ov-profile');
+  const rate = parseFloat(document.getElementById('pf-usd-rate').value);
+  S.profile.name = name;
+  if (rate > 0) S.profile.usdRate = rate;
+  save(); closeOv('ov-profile');
   document.getElementById('hm-name').textContent = name;
   toast('Profil diperbarui ✓');
 }
