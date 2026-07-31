@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDE — Kasku Finance App</title>
+<style>
+/* ── Tokens ── */
+:root {
+  --bg:       #f7f7fb;
+  --surface:  #ffffff;
+  --border:   #e2e2f0;
+  --border2:  #c9c9e4;
+  --text:     #12132a;
+  --text2:    #5a5c88;
+  --text3:    #9294bf;
+  --accent:   #5856d6;
+  --acc-lt:   #eeeefd;
+  --amber:    #d97706;
+  --amb-lt:   #fef3c7;
+  --green:    #16a34a;
+  --grn-lt:   #dcfce7;
+  --red:      #dc2626;
+  --red-lt:   #fee2e2;
+  --shadow:   0 1px 4px rgba(88,86,214,.07), 0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #0e0f1c;
+    --surface:  #161727;
+    --border:   #252647;
+    --border2:  #383870;
+    --text:     #dde0ff;
+    --text2:    #8890c8;
+    --text3:    #555888;
+    --accent:   #6f6df0;
+    --acc-lt:   #1e1e50;
+    --amber:    #f5a623;
+    --amb-lt:   #2a1f06;
+    --green:    #22c55e;
+    --grn-lt:   #052e16;
+    --red:      #f87171;
+    --red-lt:   #2d0a0a;
+    --shadow:   0 1px 4px rgba(0,0,0,.3), 0 4px 20px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0e0f1c; --surface:#161727; --border:#252647; --border2:#383870;
+  --text:#dde0ff; --text2:#8890c8; --text3:#555888;
+  --accent:#6f6df0; --acc-lt:#1e1e50;
+  --amber:#f5a623; --amb-lt:#2a1f06;
+  --green:#22c55e; --grn-lt:#052e16;
+  --red:#f87171; --red-lt:#2d0a0a;
+  --shadow:0 1px 4px rgba(0,0,0,.3),0 4px 20px rgba(0,0,0,.4);
+}
+:root[data-theme="light"] {
+  --bg:#f7f7fb; --surface:#ffffff; --border:#e2e2f0; --border2:#c9c9e4;
+  --text:#12132a; --text2:#5a5c88; --text3:#9294bf;
+  --accent:#5856d6; --acc-lt:#eeeefd;
+  --amber:#d97706; --amb-lt:#fef3c7;
+  --green:#16a34a; --grn-lt:#dcfce7;
+  --red:#dc2626; --red-lt:#fee2e2;
+  --shadow:0 1px 4px rgba(88,86,214,.07),0 4px 16px rgba(0,0,0,.05);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size:15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 36px 20px 72px;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── Page header ── */
+.page-header {
+  max-width: 680px;
+  margin: 0 auto 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-title-block {}
+.page-eyebrow {
+  font-family: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.page-title {
+  font-family: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+.page-title span {
+  color: var(--accent);
+}
+.page-meta {
+  font-size: .82rem;
+  color: var(--text3);
+  text-align: right;
+  line-height: 1.7;
+}
+.page-meta strong {
+  display: block;
+  color: var(--text2);
+  font-weight: 600;
+}
+
+/* ── Theme toggle ── */
+.theme-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: var(--shadow);
+  transition: background .2s, border-color .2s;
+  z-index: 100;
+}
+.theme-toggle:hover { background: var(--acc-lt); }
+
+/* ── Stats row ── */
+.stats-row {
+  max-width: 680px;
+  margin: 0 auto 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.stat-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-n {
+  font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.stat-l {
+  font-size: .72rem;
+  color: var(--text3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* ── Section header ── */
+.section-header {
+  max-width: 680px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label {
+  font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.section-count {
+  font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  font-size: .7rem;
+  color: var(--text3);
+  font-weight: 600;
+}
+
+/* ── Idea card ── */
+.idea-list {
+  max-width: 680px;
+  margin: 0 auto 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: border-color .18s;
+}
+.card:hover { border-color: var(--border2); }
+.card-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 28px;
+  text-align: center;
+}
+.card-body { flex: 1; min-width: 0; }
+.card-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+.card-title {
+  font-size: .94rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  text-wrap: balance;
+}
+.card-desc {
+  font-size: .82rem;
+  color: var(--text2);
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.tag-ux  { background: var(--acc-lt); color: var(--accent); }
+.tag-feat { background: var(--grn-lt); color: var(--green); }
+.tag-perf { background: var(--amb-lt); color: var(--amber); }
+.tag-bug  { background: var(--red-lt); color: var(--red); }
+.tag-data { background: var(--amb-lt); color: var(--amber); }
+.tag-sec  { background: var(--red-lt); color: var(--red); }
+.tag-viz  { background: var(--acc-lt); color: var(--accent); }
+
+/* ── Status badge ── */
+.status {
+  font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.status-done    { background: var(--grn-lt); color: var(--green); }
+.status-high    { background: var(--red-lt); color: var(--red); }
+.status-medium  { background: var(--amb-lt); color: var(--amber); }
+.status-idea    { background: var(--acc-lt); color: var(--accent); }
+
+/* ── Done card variation ── */
+.card.done {
+  opacity: .7;
+}
+.card.done .card-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--text3);
+}
+
+/* ── Priority stripe ── */
+.card.high { border-left: 3px solid var(--red); }
+.card.medium { border-left: 3px solid var(--amber); }
+
+/* ── Footer ── */
+.footer {
+  max-width: 680px;
+  margin: 40px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: .78rem;
+  color: var(--text3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footer code {
+  font-family: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  background: var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: .72rem;
+  color: var(--accent);
+}
+
+@media (max-width: 500px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .page-meta { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Ganti tema">🌙</button>
+
+<!-- ── Page header ── -->
+<header class="page-header">
+  <div class="page-title-block">
+    <div class="page-eyebrow">// ide &amp; rencana fitur</div>
+    <h1 class="page-title">KASKU <span>//</span> IDE</h1>
+  </div>
+  <div class="page-meta">
+    <strong>Kasku Finance App</strong>
+    index.html · claude/kasku-finance-app
+  </div>
+</header>
+
+<!-- ── Stats ── -->
+<div class="stats-row">
+  <div class="stat-chip">
+    <div class="stat-n" style="color:var(--green)">12</div>
+    <div class="stat-l">Selesai</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-n" style="color:var(--red)">3</div>
+    <div class="stat-l">Prioritas</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-n" style="color:var(--amber)">4</div>
+    <div class="stat-l">Medium</div>
+  </div>
+  <div class="stat-chip">
+    <div class="stat-n" style="color:var(--accent)">6</div>
+    <div class="stat-l">Ide Baru</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PRIORITAS TINGGI
+════════════════════════════════════ -->
+<div class="section-header">
+  <span class="section-label">Prioritas Tinggi</span>
+  <div class="section-line"></div>
+  <span class="section-count">3 item</span>
+</div>
+
+<div class="idea-list">
+
+  <div class="card high">
+    <div class="card-icon">📤</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Export Laporan PDF / Excel</span>
+        <span class="status status-high">Prioritas</span>
+      </div>
+      <div class="card-desc">Cetak atau kirim laporan keuangan bulanan ke PDF / Excel. Formatnya mirip teks rangkuman yang sudah ada — tapi rapi untuk dikirim ke akuntan atau disimpan.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+        <span class="tag tag-data">Data</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card high">
+    <div class="card-icon">🔔</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Notifikasi Tagihan Jatuh Tempo</span>
+        <span class="status status-high">Prioritas</span>
+      </div>
+      <div class="card-desc">Push notification (atau setidaknya badge merah di ikon app) H-3 dan H-1 sebelum tagihan jatuh tempo. Tagihan sudah ada di state — tinggal tambah alarm.</div>
+      <div class="card-tags">
+        <span class="tag tag-ux">UX</span>
+        <span class="tag tag-feat">Fitur</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card high">
+    <div class="card-icon">🎯</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Target Budget per Kategori</span>
+        <span class="status status-high">Prioritas</span>
+      </div>
+      <div class="card-desc">Tetapkan plafon pengeluaran bulanan per kategori (mis. Operasional maks Rp 5jt). Progress bar di rangkuman menampilkan realisasi vs target dengan warna peringatan.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+        <span class="tag tag-viz">Viz</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════
+     PRIORITAS MENENGAH
+════════════════════════════════════ -->
+<div class="section-header">
+  <span class="section-label">Prioritas Menengah</span>
+  <div class="section-line"></div>
+  <span class="section-count">4 item</span>
+</div>
+
+<div class="idea-list">
+
+  <div class="card medium">
+    <div class="card-icon">🔁</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Transaksi Berulang (Recurring)</span>
+        <span class="status status-medium">Medium</span>
+      </div>
+      <div class="card-desc">Gaji bulanan, sewa, langganan — bisa ditandai "berulang" sehingga muncul otomatis tiap periode tanpa input ulang.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+        <span class="tag tag-ux">UX</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card medium">
+    <div class="card-icon">📊</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Grafik Pie Kategori Pengeluaran</span>
+        <span class="status status-medium">Medium</span>
+      </div>
+      <div class="card-desc">Pie atau donut chart di halaman Rangkuman untuk memperlihatkan proporsi kategori pengeluaran secara visual. Tap irisan untuk detail.</div>
+      <div class="card-tags">
+        <span class="tag tag-viz">Viz</span>
+        <span class="tag tag-ux">UX</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card medium">
+    <div class="card-icon">💾</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Backup &amp; Restore (JSON / Cloud)</span>
+        <span class="status status-medium">Medium</span>
+      </div>
+      <div class="card-desc">Export state <code>kasku_v2</code> ke file JSON untuk backup manual. Versi lanjut: sinkronisasi ke Google Drive / iCloud agar tidak hilang jika ganti HP.</div>
+      <div class="card-tags">
+        <span class="tag tag-data">Data</span>
+        <span class="tag tag-sec">Keamanan</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card medium">
+    <div class="card-icon">📈</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Perbandingan Bulan ke Bulan</span>
+        <span class="status status-medium">Medium</span>
+      </div>
+      <div class="card-desc">Kartu kecil di Rangkuman: "Pengeluaran bulan ini vs bulan lalu" dengan delta persentase (+12% / -8%). Sederhana tapi informatif sekali.</div>
+      <div class="card-tags">
+        <span class="tag tag-viz">Viz</span>
+        <span class="tag tag-feat">Fitur</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════
+     IDE BARU
+════════════════════════════════════ -->
+<div class="section-header">
+  <span class="section-label">Ide Baru</span>
+  <div class="section-line"></div>
+  <span class="section-count">6 item</span>
+</div>
+
+<div class="idea-list">
+
+  <div class="card">
+    <div class="card-icon">📸</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Scan Struk / OCR</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Foto struk belanja → OCR otomatis isi nominal dan kategori. Bisa pakai API Tesseract.js (offline) atau Gemini Vision.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+        <span class="tag tag-ux">UX</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">📥</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Import dari Excel / CSV</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Upload file mutasi rekening (CSV dari m-banking) dan mapping kolom ke format Kasku. Sangat berguna untuk onboarding data lama.</div>
+      <div class="card-tags">
+        <span class="tag tag-data">Data</span>
+        <span class="tag tag-feat">Fitur</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🌙</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Jadwal Dark Mode Otomatis</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Aktifkan tema Malam otomatis mulai pukul 20:00 dan kembali ke tema normal pukul 07:00. Tersimpan di profil.</div>
+      <div class="card-tags">
+        <span class="tag tag-ux">UX</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🤖</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Analisis AI Otomatis</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Kirim teks rangkuman langsung ke Claude / ChatGPT dari dalam app (satu tombol). Minta saran penghematan, proyeksi, atau deteksi anomali.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🏷️</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Tag Kustom pada Transaksi</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Tambah tag bebas (mis. "proyek-A", "lebaran", "perjalanan") pada setiap transaksi. Filter dan laporan berdasarkan tag.</div>
+      <div class="card-tags">
+        <span class="tag tag-ux">UX</span>
+        <span class="tag tag-feat">Fitur</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🌐</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Multi-kurs Live (USD, SGD, EUR)</span>
+        <span class="status status-idea">Ide</span>
+      </div>
+      <div class="card-desc">Fetch kurs terkini dari API publik (ExchangeRate-API / Frankfurter) saat membuka app. Tampilkan di Pengaturan; update kurs USD otomatis tanpa input manual.</div>
+      <div class="card-tags">
+        <span class="tag tag-feat">Fitur</span>
+        <span class="tag tag-data">Data</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════
+     SELESAI
+════════════════════════════════════ -->
+<div class="section-header">
+  <span class="section-label">Selesai ✓</span>
+  <div class="section-line"></div>
+  <span class="section-count">12 item</span>
+</div>
+
+<div class="idea-list">
+
+  <div class="card done">
+    <div class="card-icon">📊</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Multi-line Equity Chart (TradingView style)</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">1 canvas, 3 garis (Bisnis / Saldo / Pengeluaran Pribadi). Grid horizontal, crosshair drag, nilai real-time di kanan.</div>
+      <div class="card-tags"><span class="tag tag-viz">Viz</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">💱</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Input USD dengan Konversi ke IDR</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Toggle 💱 USD di form pemasukan. Input nominal $, simpan IDR hasil konversi + referensi USD. Kurs di-set manual di Pengaturan.</div>
+      <div class="card-tags"><span class="tag tag-feat">Fitur</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">🔍</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Realtime Search di Riwayat</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Filter transaksi per huruf ketik — cocok ke nama, kategori, catatan, dan nominal.</div>
+      <div class="card-tags"><span class="tag tag-ux">UX</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">📅</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Filter Periode (Riwayat &amp; Rangkuman)</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Chip filter: Semua / Minggu Ini / Bulan Ini / Bulan Lalu / Tahun Ini di kedua halaman.</div>
+      <div class="card-tags"><span class="tag tag-ux">UX</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">🔒</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">PIN Lock Saat Buka App</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">4-digit PIN numpad saat app dibuka. Toggle di Pengaturan Profil untuk aktifkan / nonaktifkan.</div>
+      <div class="card-tags"><span class="tag tag-sec">Keamanan</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">✨</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Tema Salju (Snow Mode)</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">60 partikel bercahaya (putih/ungu/pink) jatuh di canvas overlay z-index:999. Loop via requestAnimationFrame.</div>
+      <div class="card-tags"><span class="tag tag-ux">UX</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">👆</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Swipe-to-Reveal Edit / Hapus di Riwayat</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Geser kanan atau tekan tahan 550ms untuk menampilkan tombol aksi. Tampilan riwayat tetap bersih.</div>
+      <div class="card-tags"><span class="tag tag-ux">UX</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">📋</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Kartu Statistik Bisnis + Pribadi + Saldo</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">3 kartu terpisah. Investasi tidak dihitung sebagai pengeluaran pribadi. Margin bisnis ditampilkan sebagai persentase.</div>
+      <div class="card-tags"><span class="tag tag-viz">Viz</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">🏆</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Top 5 Tanggal Pengeluaran &amp; Pemasukan</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Ranking tanggal dengan total transaksi terbesar, terpisah antara pengeluaran dan pemasukan.</div>
+      <div class="card-tags"><span class="tag tag-viz">Viz</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">📉</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Tren Cash Flow 8 Minggu (Bar Chart)</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Bar chart pemasukan vs pengeluaran per minggu. Tidak terpengaruh filter periode — selalu tampilkan 8 minggu terakhir.</div>
+      <div class="card-tags"><span class="tag tag-viz">Viz</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">🎨</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">8 Tema Warna (termasuk Dark Mode)</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Ungu / Biru / Hijau / Oranye / Malam / Merah / Teal / Salju. Disimpan ke localStorage.</div>
+      <div class="card-tags"><span class="tag tag-ux">UX</span></div>
+    </div>
+  </div>
+
+  <div class="card done">
+    <div class="card-icon">🗂️</div>
+    <div class="card-body">
+      <div class="card-top">
+        <span class="card-title">Multi-Wallet dengan Transfer Antar Dompet</span>
+        <span class="status status-done">Selesai</span>
+      </div>
+      <div class="card-desc">Dompet dengan nama, ikon, warna kustom. Transfer tidak dihitung sebagai pengeluaran/pemasukan di statistik.</div>
+      <div class="card-tags"><span class="tag tag-feat">Fitur</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <span>Kasku Finance App · <code>ide.html</code></span>
+  <span id="footer-date"></span>
+</footer>
+
+<script>
+  /* Theme toggle */
+  const root = document.documentElement;
+  const btn  = document.querySelector('.theme-toggle');
+  const stored = localStorage.getItem('ide_theme');
+  if (stored) { root.dataset.theme = stored; btn.textContent = stored==='dark'?'☀️':'🌙'; }
+
+  function toggleTheme() {
+    const cur = root.dataset.theme;
+    if (!cur || cur === 'light') {
+      root.dataset.theme = 'dark'; btn.textContent = '☀️';
+      localStorage.setItem('ide_theme','dark');
+    } else {
+      root.dataset.theme = 'light'; btn.textContent = '🌙';
+      localStorage.setItem('ide_theme','light');
+    }
+  }
+
+  /* Footer date */
+  const d = new Date();
+  const MON = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  document.getElementById('footer-date').textContent =
+    'Diperbarui ' + d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear();
+</script>
+</body>
+</html>
